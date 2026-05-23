@@ -193,8 +193,29 @@
           <div id="live-status"></div>
         </div>
         <div class="sl-row">
-          <label>Volume (gal) <span id="lbl-vol">7,000</span></label>
+          <label>Tank 1 volume (gal) <span id="lbl-vol">7,000</span></label>
           <input type="range" min="1000" max="34000" value="7000" id="sl-vol" oninput="onSlide()">
+        </div>
+      </div>
+
+      <div>
+        <div class="sec">Cascade Failure</div>
+        <div style="font-size:.62rem;color:var(--dim);margin-bottom:6px;line-height:1.4;">Toggle additional tanks. All three are 34,000-gal capacity. Cascade assumes sympathetic detonation.</div>
+        <div class="tog-row" onclick="togTank(2)">
+          <span class="tog-label"><span class="dot9" style="background:#ff5500"></span>Tank 2 (34,000 gal)</span>
+          <div class="sw" id="sw-tank2"></div>
+        </div>
+        <div class="tog-row" onclick="togTank(3)">
+          <span class="tog-label"><span class="dot9" style="background:#ff5500"></span>Tank 3 (34,000 gal)</span>
+          <div class="sw" id="sw-tank3"></div>
+        </div>
+        <div class="row" style="margin-top:6px;">
+          <span class="lbl">Total volume</span>
+          <span class="val c" id="s-totalvol">7,000 gal</span>
+        </div>
+        <div class="row">
+          <span class="lbl">Scenario</span>
+          <span class="val c" id="s-scenario">Single tank</span>
         </div>
       </div>
 
@@ -491,7 +512,7 @@ function miStr(m) { return (m/1609).toFixed(2)+' mi'; }
 // ── update UI ──────────────────────────────────────────────
 function updateUI(b, p) {
   // sidebar stats
-  document.getElementById('s-tnt').textContent = b.tntMT.toFixed(1)+' MT TNT';
+  document.getElementById('s-tnt').textContent = b.tntMT.toFixed(1)+' MT TNT' + (activeTanks > 1 ? ' ⚠' : '');
   document.getElementById('d-fb').textContent  = ftStr(b.fireball);
   document.getElementById('d-sv').textContent  = ftStr(b.severe);
   document.getElementById('d-md').textContent  = ftStr(b.moderate);
@@ -510,7 +531,17 @@ function updateUI(b, p) {
   document.getElementById('ib-e1').textContent  = miStr(p.erpg1);
 }
 
-// ── live weather via Open-Meteo ────────────────────────────
+// ── cascade tank state ─────────────────────────────────────
+const tanks = { t2: false, t3: false };
+
+function togTank(n) {
+  const key = 't' + n;
+  tanks[key] = !tanks[key];
+  document.getElementById('sw-tank' + n).classList.toggle('on', tanks[key]);
+  onSlide();
+}
+
+
 // Free, no API key, CORS-open. Pulls current conditions at GKN coords.
 async function fetchLiveWind() {
   const btn    = document.getElementById('btn-live');
@@ -576,18 +607,30 @@ function bearingToCompass(deg) {
 function onSlide() {
   const eff  = +document.getElementById('sl-eff').value;
   const wind = +document.getElementById('sl-wind').value;
-  const vol  = +document.getElementById('sl-vol').value;
+  const vol1 = +document.getElementById('sl-vol').value;
+
+  // Add cascade tanks
+  const vol2 = tanks.t2 ? 34000 : 0;
+  const vol3 = tanks.t3 ? 34000 : 0;
+  const totalVol = vol1 + vol2 + vol3;
+
+  // Scenario label
+  const activeTanks = 1 + (tanks.t2 ? 1 : 0) + (tanks.t3 ? 1 : 0);
+  const scenarioLabel = activeTanks === 1 ? 'Single tank' :
+                        activeTanks === 2 ? 'CASCADE — 2 tanks' : 'CASCADE — ALL 3 TANKS';
 
   document.getElementById('lbl-eff').textContent  = eff+'%';
   document.getElementById('lbl-wind').textContent = wind;
-  document.getElementById('lbl-vol').textContent  = Math.round(vol).toLocaleString();
-  document.getElementById('s-vol').textContent    = Math.round(vol).toLocaleString()+' gal';
+  document.getElementById('lbl-vol').textContent  = Math.round(vol1).toLocaleString();
+  document.getElementById('s-vol').textContent    = Math.round(vol1).toLocaleString()+' gal';
+  document.getElementById('s-totalvol').textContent = totalVol.toLocaleString()+' gal';
+  document.getElementById('s-scenario').textContent = scenarioLabel;
   document.getElementById('s-wspd').textContent   = wind+' mph';
   const wbSpd = document.getElementById('wb-spd');
   if (wbSpd) wbSpd.textContent = wind+' mph';
 
-  const b = calcBlast(vol, eff);
-  const p = calcPlume(vol, wind);
+  const b = calcBlast(totalVol, eff);
+  const p = calcPlume(totalVol, wind);
 
   updateUI(b, p);
   if (state.blast) drawBlast(b); else blastGrp.clearLayers();
