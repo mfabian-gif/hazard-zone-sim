@@ -545,7 +545,6 @@ async function fetchLiveWind() {
     document.getElementById('sl-wind').value        = clamped;
     document.getElementById('lbl-wind').textContent = clamped;
     document.getElementById('s-wspd').textContent   = clamped + ' mph';
-    document.getElementById('wb-spd').textContent   = clamped + ' mph';
 
     document.querySelector('#windbadge').innerHTML =
       `WIND <span class="wv">${compassFrom} → ${compassTo}</span><br>` +
@@ -584,7 +583,8 @@ function onSlide() {
   document.getElementById('lbl-vol').textContent  = Math.round(vol).toLocaleString();
   document.getElementById('s-vol').textContent    = Math.round(vol).toLocaleString()+' gal';
   document.getElementById('s-wspd').textContent   = wind+' mph';
-  document.getElementById('wb-spd').textContent   = wind+' mph';
+  const wbSpd = document.getElementById('wb-spd');
+  if (wbSpd) wbSpd.textContent = wind+' mph';
 
   const b = calcBlast(vol, eff);
   const p = calcPlume(vol, wind);
