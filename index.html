@@ -192,6 +192,11 @@
           </button>
           <div id="live-status"></div>
         </div>
+        <div class="sl-row" id="forecast-row" style="display:none;">
+          <label>Forecast time <span id="lbl-fcast">Now</span></label>
+          <input type="range" min="0" max="10" value="0" id="sl-fcast" oninput="onForecastSlide()">
+          <div id="fcast-detail" style="font-family:'Share Tech Mono',monospace;font-size:.58rem;color:var(--dim);margin-top:2px;"></div>
+        </div>
         <div class="sl-row">
           <label>Tank 1 volume (gal) <span id="lbl-vol">7,000</span></label>
           <input type="range" min="1000" max="34000" value="7000" id="sl-vol" oninput="onSlide()">
@@ -542,51 +547,117 @@ function togTank(n) {
 }
 
 
-// Free, no API key, CORS-open. Pulls current conditions at GKN coords.
-async function fetchLiveWind() {
+// ── weather data store ─────────────────────────────────────
+let forecastHours = []; // array of {time, wsMph, wdDeg, wgMph} for hours 0-10
+
+function applyWeatherHour(idx) {
+  if (!forecastHours.length) return;
+  const h = forecastHours[Math.min(idx, forecastHours.length - 1)];
+  const clamped = Math.min(20, Math.max(2, h.wsMph));
+  const plumeBearing = (h.wdDeg + 180) % 360;
+  window.LIVE_WIND_BEARING = plumeBearing;
+
+  const compassFrom = bearingToCompass(h.wdDeg);
+  const compassTo   = bearingToCompass(plumeBearing);
+  const label = idx === 0 ? 'Now' : '+' + idx + 'h (' + h.timeLabel + ')';
+
+  document.getElementById('sl-wind').value        = clamped;
+  document.getElementById('lbl-wind').textContent = clamped;
+  document.getElementById('s-wspd').textContent   = clamped + ' mph';
+
+  document.querySelector('#windbadge').innerHTML =
+    `WIND <span class="wv">${compassFrom} → ${compassTo}</span><br>` +
+    `SPEED <span class="wv">${clamped} mph</span><br>` +
+    `GUSTS <span class="wv">${h.wgMph} mph</span><br>` +
+    `SRC <span class="wv">open-meteo ${idx===0?'(live)':'(fcst)'}</span><br>` +
+    `STABILITY <span class="wv">Pasquill D</span>`;
+
+  document.getElementById('lbl-fcast').textContent = label;
+  document.getElementById('fcast-detail').textContent =
+    `${h.wsMph} mph from ${compassFrom}, gusts ${h.wgMph} mph`;
+
+  onSlide();
+}
+
+function onForecastSlide() {
+  const idx = +document.getElementById('sl-fcast').value;
+  applyWeatherHour(idx);
+}
+
+async function fetchLiveWind(silent) {
   const btn    = document.getElementById('btn-live');
   const status = document.getElementById('live-status');
-  btn.classList.add('loading');
-  btn.textContent = '⟳ Fetching…';
+  if (!silent) {
+    btn.classList.add('loading');
+    btn.textContent = '⟳ Fetching…';
+  }
   status.className = '';
   status.textContent = '';
 
   try {
     const url = 'https://api.open-meteo.com/v1/forecast' +
-      '?latitude=33.7739&longitude=-117.9410' +
+      '?latitude=33.786&longitude=-118.001' +
       '&current=wind_speed_10m,wind_direction_10m,wind_gusts_10m' +
-      '&wind_speed_unit=mph&timezone=America%2FLos_Angeles&forecast_days=1';
+      '&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m' +
+      '&wind_speed_unit=mph&timezone=America%2FLos_Angeles&forecast_days=2';
 
     const resp = await fetch(url);
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     const data = await resp.json();
 
-    const wsMph  = Math.round(data.current.wind_speed_10m);
-    const wgMph  = Math.round(data.current.wind_gusts_10m);
-    const wdDeg  = data.current.wind_direction_10m;  // FROM direction
-    const clamped = Math.min(20, Math.max(2, wsMph));
+    // Build forecast array: current hour + next 10 hours
+    const now = new Date();
+    const currentHour = now.getHours();
+    const times = data.hourly.time;
+    const speeds = data.hourly.wind_speed_10m;
+    const dirs   = data.hourly.wind_direction_10m;
+    const gusts  = data.hourly.wind_gusts_10m;
 
-    // Plume travels OPPOSITE to the FROM direction
-    const plumeBearing = (wdDeg + 180) % 360;
-    window.LIVE_WIND_BEARING = plumeBearing;
+    // Find index of current hour in hourly array
+    let startIdx = 0;
+    for (let i = 0; i < times.length; i++) {
+      const t = new Date(times[i]);
+      if (t.getHours() === currentHour && t.getDate() === now.getDate()) {
+        startIdx = i;
+        break;
+      }
+    }
 
-    const compassFrom = bearingToCompass(wdDeg);
-    const compassTo   = bearingToCompass(plumeBearing);
+    forecastHours = [];
+    for (let i = 0; i <= 10; i++) {
+      const idx = startIdx + i;
+      const t = new Date(times[idx]);
+      const hr = t.getHours();
+      const ampm = hr >= 12 ? 'PM' : 'AM';
+      const hr12 = hr % 12 || 12;
+      forecastHours.push({
+        wsMph: Math.round(speeds[idx]),
+        wdDeg: dirs[idx],
+        wgMph: Math.round(gusts[idx]),
+        timeLabel: hr12 + ampm,
+      });
+    }
 
-    document.getElementById('sl-wind').value        = clamped;
-    document.getElementById('lbl-wind').textContent = clamped;
-    document.getElementById('s-wspd').textContent   = clamped + ' mph';
+    // Override hour 0 with live current data
+    forecastHours[0] = {
+      wsMph: Math.round(data.current.wind_speed_10m),
+      wdDeg: data.current.wind_direction_10m,
+      wgMph: Math.round(data.current.wind_gusts_10m),
+      timeLabel: 'Now',
+    };
 
-    document.querySelector('#windbadge').innerHTML =
-      `WIND <span class="wv">${compassFrom} → ${compassTo}</span><br>` +
-      `SPEED <span class="wv">${clamped} mph</span><br>` +
-      `GUSTS <span class="wv">${wgMph} mph</span><br>` +
-      `SRC <span class="wv">open-meteo (live)</span><br>` +
-      `STABILITY <span class="wv">Pasquill D</span>`;
+    // Show forecast slider now that we have data
+    document.getElementById('forecast-row').style.display = '';
+    document.getElementById('sl-fcast').value = 0;
 
-    status.className = 'ok';
-    status.textContent = `✓ ${wsMph} mph from ${compassFrom}, gusts ${wgMph}`;
-    onSlide();
+    // Apply current conditions
+    applyWeatherHour(0);
+
+    if (!silent) {
+      const h = forecastHours[0];
+      status.className = 'ok';
+      status.textContent = `✓ ${h.wsMph} mph from ${bearingToCompass(h.wdDeg)}, gusts ${h.wgMph}`;
+    }
 
   } catch(e) {
     status.className = 'err';
@@ -640,9 +711,9 @@ function onSlide() {
 
 // ── init ───────────────────────────────────────────────────
 onSlide();
-
-// Force Leaflet to recalculate size after layout settles
 setTimeout(() => { map.invalidateSize(); }, 100);
+// Auto-fetch live weather + forecast on load (silent = no error flash)
+fetchLiveWind(true);
 </script>
 </body>
 </html>
