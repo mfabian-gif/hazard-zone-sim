@@ -533,6 +533,7 @@ function updateUI(b, p) {
 
 // ── cascade tank state ─────────────────────────────────────
 const tanks = { t2: false, t3: false };
+let activeTanks = 1; // module-level so updateUI can read it
 
 function togTank(n) {
   const key = 't' + n;
@@ -614,8 +615,8 @@ function onSlide() {
   const vol3 = tanks.t3 ? 34000 : 0;
   const totalVol = vol1 + vol2 + vol3;
 
-  // Scenario label
-  const activeTanks = 1 + (tanks.t2 ? 1 : 0) + (tanks.t3 ? 1 : 0);
+  // Update module-level activeTanks so updateUI can read it
+  activeTanks = 1 + (tanks.t2 ? 1 : 0) + (tanks.t3 ? 1 : 0);
   const scenarioLabel = activeTanks === 1 ? 'Single tank' :
                         activeTanks === 2 ? 'CASCADE — 2 tanks' : 'CASCADE — ALL 3 TANKS';
 
