@@ -275,7 +275,7 @@
 
 <script>
 // ── constants ──────────────────────────────────────────────
-const GKN = [33.7648, -117.9410]; // 12122 Western Ave @ Lampson Ave, Garden Grove
+const GKN = [33.786, -118.001]; // 12122 Western Ave, Garden Grove - confirmed coordinates
 const WIND_BEARING = 45; // degrees from north, NE
 
 // ── Leaflet map ────────────────────────────────────────────
@@ -473,26 +473,25 @@ function drawPlume(p) {
 
 function drawEvac() {
   evacGrp.clearLayers();
-  // OFFICIAL OCFA / City of Garden Grove updated evacuation boundaries:
-  //   North:  Ball Road        ~33.8060
-  //   South:  Trask Avenue     ~33.7620
-  //   West:   Valley View St   ~-118.0080
-  //   East:   Dale Street      ~-117.9270
+  // OFFICIAL City of Garden Grove / OCFA evacuation boundaries (ggcity.org/emergency):
+  //   North:  Ball Road        ~33.8065
+  //   South:  Trask Avenue     ~33.7615
+  //   West:   Valley View St   ~-118.0075
+  //   East:   Dale Street      ~-117.9265
   const bounds = [
-    [33.8060, -118.0080], // NW  Ball Rd & Valley View
-    [33.8060, -117.9270], // NE  Ball Rd & Dale St
-    [33.7620, -117.9270], // SE  Trask Ave & Dale St
-    [33.7620, -118.0080], // SW  Trask Ave & Valley View
+    [33.8065, -118.0075], // NW  Ball Rd & Valley View
+    [33.8065, -117.9265], // NE  Ball Rd & Dale St
+    [33.7615, -117.9265], // SE  Trask Ave & Dale St
+    [33.7615, -118.0075], // SW  Trask Ave & Valley View
   ];
   L.polygon(bounds, {
     color:'#ffd000', weight:2, opacity:.75,
     fillColor:'#ffd000', fillOpacity:.05, dashArray:'7 4',
   })
-  .bindTooltip('<b style="color:#ffd000">EVACUATION ORDER (OCFA Official)</b><br>N: Ball Rd · S: Trask Ave<br>W: Valley View St · E: Dale St<br>~40,000 residents displaced', {sticky:true})
+  .bindTooltip('<b style="color:#ffd000">EVACUATION ORDER (ggcity.org/emergency)</b><br>N: Ball Rd · S: Trask Ave<br>W: Valley View St · E: Dale St<br>~40,000 residents displaced', {sticky:true})
   .addTo(evacGrp);
 
-  // Corner labels
-  L.marker([33.8065, -117.968], {
+  L.marker([33.8068, -117.968], {
     icon: L.divIcon({
       className:'',
       html:`<div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(255,208,0,.9);background:rgba(10,12,15,.75);padding:2px 6px;border-radius:2px;white-space:nowrap;">
