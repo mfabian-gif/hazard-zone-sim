@@ -746,13 +746,14 @@ async function fetchWeather(silent){
   if(!silent){btn.classList.add('loading');btn.textContent='⟳ Fetching…';}
   status.className='';status.textContent='';
 
-  // Try NWS ASOS stations — real physical anemometers
-  // KORG (Orange County Airport, ~4mi NE of GKN) — closest
-  // KSNA (John Wayne Airport, ~4mi SE of GKN) — fallback
-  // Open-Meteo — model-based last resort
+  // NWS ASOS stations in priority order by proximity to GKN (33.786, -118.001)
+  // KSLI — Los Alamitos Army Airfield, ~2.5mi NW — CLOSEST, used by Windy.com
+  // KORG — Orange County Airport, ~4mi NE
+  // KSNA — John Wayne Airport, ~4mi SE
   const nwsStations = [
-    { id:'KORG', name:'KORG (Orange Co. Airport)' },
-    { id:'KSNA', name:'KSNA (John Wayne Airport)' },
+    { id:'KSLI', name:'KSLI (Los Alamitos AAF, 2.5mi)' },
+    { id:'KORG', name:'KORG (Orange Co. Airport, 4mi)' },
+    { id:'KSNA', name:'KSNA (John Wayne Airport, 4mi)' },
   ];
 
   for(const station of nwsStations){
