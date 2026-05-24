@@ -741,129 +741,76 @@ async function fetchWeather(silent){
   if(!silent){btn.classList.add('loading');btn.textContent='⟳ Fetching…';}
   status.className='';status.textContent='';
 
-  // ── Source 1: Synoptic Mesonet radius query ──────────────
-  // Finds the freshest station within 15mi of GKN automatically.
-  // Uses public demotoken — free, no registration, CORS-open.
-  try {
-    const url = 'https://api.synopticdata.com/v2/stations/latest' +
-      '?radius=33.786,-118.001,15' +
-      '&vars=wind_speed,wind_direction,wind_gust' +
-      '&within=60' +        // only stations that reported within 60 min
-      '&units=english' +    // mph
-      '&limit=5' +          // top 5 closest
-      '&token=demotoken';
-    const resp = await fetch(url);
-    if(!resp.ok) throw new Error('Synoptic HTTP '+resp.status);
-    const data = await resp.json();
-    const stations = data.STATION;
-    if(!stations || stations.length === 0) throw new Error('No stations in range');
-
-    // Pick the station with the freshest wind observation
-    let best = null, bestAge = Infinity;
-    for(const s of stations){
-      const obs = s.OBSERVATIONS;
-      const wsVal = obs.wind_speed_value_1?.value;
-      const wdVal = obs.wind_direction_value_1?.value;
-      if(wsVal == null || wdVal == null) continue;
-      const obsTime = new Date(obs.wind_speed_value_1.date_time);
-      const ageMin = (Date.now() - obsTime) / 60000;
-      if(ageMin < bestAge){ bestAge = ageMin; best = s; }
-    }
-    if(!best) throw new Error('No valid wind obs');
-
-    const obs = best.OBSERVATIONS;
-    const wsMph = Math.round(obs.wind_speed_value_1.value);
-    const wdDeg = Math.round(obs.wind_direction_value_1.value);
-    const wgMph = obs.wind_gust_value_1?.value
-      ? Math.round(obs.wind_gust_value_1.value) : wsMph;
-    const minsAgo = Math.round(bestAge);
-    const stName = best.NAME;
-    const stId = best.STID;
-    const distMi = parseFloat(best.DISTANCE).toFixed(1);
-
-    forecastHours = [{wsMph, wdDeg, wgMph, timeLabel:'Now'}];
-    await fillForecastFromOpenMeteo();
-    forecastHours[0] = {wsMph, wdDeg, wgMph, timeLabel:'Now'};
-
-    document.getElementById('forecast-row').style.display='';
-    document.getElementById('sl-fcast').value=0;
-    applyWeatherHour(0);
-
-    const src = `${stId} · ${distMi}mi · ${minsAgo}min ago`;
-    document.getElementById('wb-src').textContent=src;
-    if(!silent){
-      status.className='ok';
-      status.textContent=`✓ ${wsMph}mph from ${bearingToCompass(wdDeg)}, gusts ${wgMph} · ${stId} (${stName}, ${distMi}mi)`;
-    }
-    btn.classList.remove('loading'); btn.textContent='⟳ Live weather';
-    return;
-  } catch(e){
-    console.warn('Synoptic failed:', e.message);
-  }
-
-  // ── Source 2: NWS ASOS — KSLI, KORG, KSNA ───────────────
-  const nwsStations = [
-    { id:'KSLI', name:'KSLI Los Alamitos AAF 2.5mi' },
-    { id:'KORG', name:'KORG Orange Co. Airport 4mi' },
-    { id:'KSNA', name:'KSNA John Wayne Airport 4mi' },
+  // NWS ASOS — real physical anemometers, no API key needed
+  // 30-minute staleness check — skip if observation is too old
+  const nwsStations=[
+    {id:'KSLI',name:'KSLI Los Alamitos AAF',dist:'2.5mi'},
+    {id:'KORG',name:'KORG Orange Co. Airport',dist:'4mi'},
+    {id:'KSNA',name:'KSNA John Wayne Airport',dist:'4mi'},
   ];
-  for(const station of nwsStations){
+
+  for(const st of nwsStations){
     try{
-      const resp = await fetch(
-        `https://api.weather.gov/stations/${station.id}/observations/latest`,
-        { headers:{'User-Agent':'GKN-HazmatSim/2.0','Accept':'application/geo+json'} }
+      const resp=await fetch(
+        `https://api.weather.gov/stations/${st.id}/observations/latest`,
+        {headers:{'User-Agent':'GKN-HazmatSim/2.0','Accept':'application/geo+json'}}
       );
-      if(!resp.ok) throw new Error(resp.status);
-      const data = await resp.json();
-      const props = data.properties;
-      const wsMs = props.windSpeed?.value;
-      const wdDeg = props.windDirection?.value;
-      const wgMs = props.windGust?.value;
-      if(wsMs == null || wdDeg == null) throw new Error('no wind data');
+      if(!resp.ok) throw new Error('HTTP '+resp.status);
+      const data=await resp.json();
+      const props=data.properties;
 
-      // Staleness check — skip if > 30 min old
-      const obsTime = new Date(props.timestamp);
-      const minsAgo = Math.round((Date.now() - obsTime)/60000);
-      if(minsAgo > 30) throw new Error(`stale (${minsAgo}min)`);
+      // Null checks
+      const wsMs=props.windSpeed?.value;
+      const wdDeg=props.windDirection?.value;
+      const wgMs=props.windGust?.value;
+      if(wsMs==null||wdDeg==null) throw new Error('no wind data');
 
-      const wsMph = Math.round(wsMs * 2.23694);
-      const wgMph = wgMs ? Math.round(wgMs * 2.23694) : wsMph;
+      // Sanity check — reject obviously wrong values
+      const wsMph=Math.round(wsMs*2.23694);
+      if(wsMph>80||wsMph<0) throw new Error(`implausible speed: ${wsMph}mph`);
 
-      forecastHours = [{wsMph, wdDeg, wgMph, timeLabel:'Now'}];
+      // Staleness check — skip if >45 min old
+      const obsTime=new Date(props.timestamp);
+      const minsAgo=Math.round((Date.now()-obsTime)/60000);
+      if(minsAgo>45) throw new Error(`stale: ${minsAgo}min old`);
+
+      const wgMph=wgMs?Math.round(wgMs*2.23694):null;
+
+      forecastHours=[{wsMph,wdDeg,wgMph:wgMph||wsMph,timeLabel:'Now'}];
       await fillForecastFromOpenMeteo();
-      forecastHours[0] = {wsMph, wdDeg, wgMph, timeLabel:'Now'};
+      forecastHours[0]={wsMph,wdDeg,wgMph:wgMph||wsMph,timeLabel:'Now'};
 
       document.getElementById('forecast-row').style.display='';
       document.getElementById('sl-fcast').value=0;
       applyWeatherHour(0);
 
-      document.getElementById('wb-src').textContent=`${station.id} · ${minsAgo}min ago`;
+      const gustTxt=wgMph&&wgMph!==wsMph?`, gusts ${wgMph}mph`:'';
+      document.getElementById('wb-src').textContent=`${st.id} · ${st.dist} · ${minsAgo}min ago`;
       if(!silent){
         status.className='ok';
-        status.textContent=`✓ ${wsMph}mph from ${bearingToCompass(wdDeg)}, gusts ${wgMph} · ${station.name}`;
+        status.textContent=`✓ ${wsMph}mph from ${bearingToCompass(wdDeg)}${gustTxt} · ${st.name}`;
       }
-      btn.classList.remove('loading'); btn.textContent='⟳ Live weather';
+      btn.classList.remove('loading');btn.textContent='⟳ Live weather';
       return;
-    } catch(e){
-      console.warn(`${station.id} failed:`, e.message);
+    }catch(e){
+      console.warn(`${st.id} skipped:`,e.message);
     }
   }
 
-  // ── Source 3: Open-Meteo model fallback ──────────────────
-  try {
+  // Fallback: Open-Meteo model
+  try{
     await fetchFromOpenMeteo();
     if(!silent){
       const h=forecastHours[0];
       status.className='ok';
-      status.textContent=`✓ ${h.wsMph}mph from ${bearingToCompass(h.wdDeg)} · open-meteo (model fallback)`;
+      status.textContent=`✓ ${h.wsMph}mph from ${bearingToCompass(h.wdDeg)} · open-meteo model`;
     }
-  } catch(e){
+  }catch(e){
     status.className='err';
     status.textContent='✗ All weather sources failed';
-    if(silent) document.getElementById('wb-src').textContent='weather unavailable';
-  } finally {
-    btn.classList.remove('loading');
-    btn.textContent='⟳ Live weather';
+    if(silent)document.getElementById('wb-src').textContent='weather unavailable';
+  }finally{
+    btn.classList.remove('loading');btn.textContent='⟳ Live weather';
   }
 }
 
