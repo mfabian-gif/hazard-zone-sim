@@ -162,6 +162,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;heigh
     <div class="tog-row" onclick="tog('plume')"><span class="tog-label"><span class="dot9" style="background:#ff7300"></span>Toxic plume</span><div class="sw on" id="sw-plume"></div></div>
     <div class="tog-row" onclick="tog('evac')"><span class="tog-label"><span class="dot9" style="background:#ffd000"></span>Evac order</span><div class="sw on" id="sw-evac"></div></div>
     <div class="tog-row" onclick="tog('topo')"><span class="tog-label"><span class="dot9" style="background:#00e676"></span>Topo overlay</span><div class="sw on" id="sw-topo"></div></div>
+    <div class="tog-row" onclick="tog('shelter')"><span class="tog-label"><span class="dot9" style="background:#00e676"></span>Shelters</span><div class="sw on" id="sw-shelter"></div></div>
   </div>
 
   <div>
@@ -257,6 +258,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;heigh
     <div class="ls-item"><div class="ls-dot" style="border-radius:50%;background:#ff7300"></div>ERPG-2</div>
     <div class="ls-item"><div class="ls-dot" style="border-radius:50%;background:#ffd000"></div>ERPG-1</div>
     <div class="ls-item" style="margin-left:4px;border-left:1px solid var(--border);padding-left:6px;"><div class="ls-dot" style="background:#ffd000;opacity:.4"></div>Evac</div>
+    <div class="ls-item" style="margin-left:4px;border-left:1px solid var(--border);padding-left:6px;"><div class="ls-dot" style="border-radius:50%;background:#00e676"></div>Shelter</div>
+    <div class="ls-item" style="margin-left:4px;border-left:1px solid var(--border);padding-left:6px;color:#00e676;">☎ (714) 741-5444</div>
   </div>
   <div class="bstat"><div class="bl">TNT EQUIV</div><div class="bv c" id="ib-tnt">—</div></div>
   <div class="bstat"><div class="bl">FIREBALL</div><div class="bv c" id="ib-fb">—</div></div>
@@ -295,13 +298,14 @@ const blastGrp=L.layerGroup().addTo(map);
 const plumeGrp=L.layerGroup().addTo(map);
 const evacGrp=L.layerGroup().addTo(map);
 const topoGrp=L.layerGroup().addTo(map);
-const state={basemap:true,blast:true,plume:true,evac:true,topo:true};
+const shelterGrp=L.layerGroup().addTo(map);
+const state={basemap:true,blast:true,plume:true,evac:true,topo:true,shelter:true};
 
 function tog(name){
   state[name]=!state[name];
   document.getElementById('sw-'+name).classList.toggle('on',state[name]);
   if(name==='basemap'){map.getContainer().classList.toggle('tiles-off',!state[name]);return;}
-  const grp=name==='blast'?blastGrp:name==='plume'?plumeGrp:name==='topo'?topoGrp:evacGrp;
+  const grp=name==='blast'?blastGrp:name==='plume'?plumeGrp:name==='topo'?topoGrp:name==='shelter'?shelterGrp:evacGrp;
   if(state[name])map.addLayer(grp);else map.removeLayer(grp);
 }
 
@@ -567,9 +571,80 @@ function drawEvac(){
   evacGrp.clearLayers();
   const bounds=[[33.8065,-118.0075],[33.8065,-117.9265],[33.7615,-117.9265],[33.7615,-118.0075]];
   L.polygon(bounds,{color:'#ffd000',weight:2,opacity:.75,fillColor:'#ffd000',fillOpacity:.05,dashArray:'7 4'})
-  .bindTooltip('<b style="color:#ffd000">EVACUATION ORDER (ggcity.org/emergency)</b><br>N: Ball Rd · S: Trask Ave · W: Valley View St · E: Dale St<br>~40,000 residents',{sticky:true})
+  .bindTooltip('<b style="color:#ffd000">EVACUATION ORDER (ggcity.org/emergency)</b><br>N: Ball Rd · S: Trask Ave · W: Valley View St · E: Dale St<br>~50,000 residents',{sticky:true})
   .addTo(evacGrp);
-  L.marker([33.8068,-117.968],{icon:L.divIcon({className:'',html:`<div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(255,208,0,.9);background:rgba(10,12,15,.75);padding:2px 6px;border-radius:2px;white-space:nowrap;">⚠ EVACUATION ORDER · ~40,000 residents · N:Ball Rd S:Trask W:Valley View E:Dale St</div>`,iconAnchor:[0,0]}),interactive:false}).addTo(evacGrp);
+  L.marker([33.8068,-117.968],{icon:L.divIcon({className:'',html:`<div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(255,208,0,.9);background:rgba(10,12,15,.75);padding:2px 6px;border-radius:2px;white-space:nowrap;">⚠ EVACUATION ORDER · ~50,000 residents · N:Ball Rd S:Trask W:Valley View E:Dale St</div>`,iconAnchor:[0,0]}),interactive:false}).addTo(evacGrp);
+}
+
+function drawShelters(){
+  shelterGrp.clearLayers();
+
+  const shelterIcon = L.divIcon({
+    className:'',
+    html:`<div style="
+      width:14px;height:14px;border-radius:50%;
+      border:2px solid #00e676;background:rgba(0,230,118,.3);
+      box-shadow:0 0 8px #00e676;
+    "></div>`,
+    iconSize:[14,14],iconAnchor:[7,7]
+  });
+
+  const shelters=[
+    {
+      name:'Freedom Hall',
+      addr:'16801 Euclid St, Fountain Valley, CA 92708',
+      lat:33.7075, lng:-117.9513,
+      status:'🔴 FULL',
+      phone:'(714) 973-6600',
+      pets:true
+    },
+    {
+      name:'Savanna High School',
+      addr:'301 N. Gilbert St, Anaheim, CA 92801',
+      lat:33.8344, lng:-117.8697,
+      status:'🟡 Some room',
+      phone:'',
+      pets:true
+    },
+    {
+      name:'Kennedy High School',
+      addr:'8281 Walker St, La Palma, CA 90623',
+      lat:33.8476, lng:-118.0434,
+      status:'🟡 Some room',
+      phone:'(714) 220-4101',
+      pets:true
+    },
+    {
+      name:'Ocean View High School',
+      addr:'17071 Gothard St, Huntington Beach, CA 92647',
+      lat:33.7423, lng:-117.9977,
+      status:'🟢 Space available',
+      phone:'(714) 848-0656',
+      pets:true
+    },
+  ];
+
+  shelters.forEach(s=>{
+    L.marker([s.lat,s.lng],{icon:shelterIcon,zIndexOffset:500})
+    .bindPopup(`
+      <b style="color:#00e676">🏫 ${s.name}</b><br>
+      ${s.addr}<br>
+      <b>${s.status}</b><br>
+      ${s.phone?'📞 '+s.phone+'<br>':''}
+      ${s.pets?'🐾 Pets welcome':''}
+    `)
+    .addTo(shelterGrp);
+
+    // Label
+    L.marker([s.lat,s.lng],{
+      icon:L.divIcon({
+        className:'',
+        html:`<div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:#00e676;background:rgba(10,12,15,.8);padding:2px 5px;border:1px solid #00e67640;border-radius:3px;white-space:nowrap;margin-left:10px;margin-top:-5px;">${s.name}<br>${s.status}</div>`,
+        iconAnchor:[-2,7]
+      }),
+      interactive:false
+    }).addTo(shelterGrp);
+  });
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -627,6 +702,7 @@ function onSlide(){
   if(state.blast)drawBlast(b);else blastGrp.clearLayers();
   if(state.plume)drawPlume(p);else plumeGrp.clearLayers();
   if(state.evac)drawEvac();else evacGrp.clearLayers();
+  if(state.shelter)drawShelters();else shelterGrp.clearLayers();
 }
 
 // ═══════════════════════════════════════════════════════════
