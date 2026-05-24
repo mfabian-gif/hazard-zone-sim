@@ -176,7 +176,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;heigh
     </div>
     <div class="sl-row">
       <label>Wind speed (mph) <span id="lbl-wind">—</span></label>
-      <input type="range" min="2" max="20" value="8" id="sl-wind" oninput="onSlide()">
+      <input type="range" min="2" max="60" value="8" id="sl-wind" oninput="onSlide()">
       <button id="btn-live" onclick="fetchWeather()">⟳ Live weather</button>
       <div id="live-status"></div>
     </div>
@@ -716,7 +716,7 @@ let forecastHours=[];
 function applyWeatherHour(idx){
   if(!forecastHours.length)return;
   const h=forecastHours[Math.min(idx,forecastHours.length-1)];
-  const clamped=Math.min(20,Math.max(2,h.wsMph));
+  const clamped=Math.min(60,Math.max(2,h.wsMph));
   window.LIVE_WIND_BEARING=(h.wdDeg+180)%360;
   const cF=bearingToCompass(h.wdDeg), cT=bearingToCompass(window.LIVE_WIND_BEARING);
   const label=idx===0?'Now':'+'+idx+'h ('+h.timeLabel+')';
