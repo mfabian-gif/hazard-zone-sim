@@ -859,9 +859,31 @@ async function fetchFromOpenMeteo(){
 // ═══════════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════════
-onSlide();
+
+// Show loading overlay on wind badge until weather arrives
+document.getElementById('wb-dir').textContent = '…';
+document.getElementById('wb-spd').textContent = 'loading';
+document.getElementById('wb-gust').textContent = '…';
+document.getElementById('wb-src').textContent = 'fetching KSLI…';
+
+// Draw blast zones and evac immediately (not wind-dependent)
+// but hold plume until weather is loaded
+const b0 = calcBlast(7000, 3);
+drawBlast(b0);
+drawEvac();
+drawShelters();
+updateUI(b0, {idlh:0, erpg2:0, erpg1:0});
+
 setTimeout(()=>{map.invalidateSize();},100);
-fetchWeather(true);
+
+// Fetch weather first, then draw plume with real wind
+fetchWeather(true).then(()=>{
+  // plume is drawn inside applyWeatherHour → onSlide
+}).catch(()=>{
+  // fallback: draw with defaults if all sources fail
+  onSlide();
+});
+
 fetchTopography();
 </script>
 </body>
