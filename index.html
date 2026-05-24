@@ -569,11 +569,11 @@ function drawPlume(p){
 
 function drawEvac(){
   evacGrp.clearLayers();
-  const bounds=[[33.8065,-118.0075],[33.8065,-117.9265],[33.7615,-117.9265],[33.7615,-118.0075]];
+  const bounds=[[33.8065,-118.0075],[33.8065,-117.9851],[33.7615,-117.9851],[33.7615,-118.0075]];
   L.polygon(bounds,{color:'#ffd000',weight:2,opacity:.75,fillColor:'#ffd000',fillOpacity:.05,dashArray:'7 4'})
   .bindTooltip('<b style="color:#ffd000">EVACUATION ORDER (ggcity.org/emergency)</b><br>N: Ball Rd · S: Trask Ave · W: Valley View St · E: Dale St<br>~50,000 residents',{sticky:true})
   .addTo(evacGrp);
-  L.marker([33.8068,-117.968],{icon:L.divIcon({className:'',html:`<div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(255,208,0,.9);background:rgba(10,12,15,.75);padding:2px 6px;border-radius:2px;white-space:nowrap;">⚠ EVACUATION ORDER · ~50,000 residents · N:Ball Rd S:Trask W:Valley View E:Dale St</div>`,iconAnchor:[0,0]}),interactive:false}).addTo(evacGrp);
+  L.marker([33.8068,-117.996],{icon:L.divIcon({className:'',html:`<div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(255,208,0,.9);background:rgba(10,12,15,.75);padding:2px 6px;border-radius:2px;white-space:nowrap;">⚠ EVACUATION ORDER · ~50,000 residents · N:Ball Rd S:Trask W:Valley View E:Dale St</div>`,iconAnchor:[0,0]}),interactive:false}).addTo(evacGrp);
 }
 
 function drawShelters(){
