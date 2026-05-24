@@ -283,7 +283,7 @@ const WIND_BEARING_DEFAULT = 45;
 // ═══════════════════════════════════════════════════════════
 // MAP
 // ═══════════════════════════════════════════════════════════
-const map = L.map('map',{center:GKN,zoom:13,zoomControl:true});
+const map = L.map('map',{center:[33.780,-117.980],zoom:11,zoomControl:true});
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors',maxZoom:19}).addTo(map);
 
 const gknIcon = L.divIcon({
@@ -601,7 +601,7 @@ function drawShelters(){
     {
       name:'Savanna High School',
       addr:'301 N. Gilbert St, Anaheim, CA 92801',
-      lat:33.8344, lng:-117.8697,
+      lat:33.8344, lng:-117.9150,
       status:'🟡 Some room',
       phone:'',
       pets:true
