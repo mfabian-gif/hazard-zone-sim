@@ -65,9 +65,12 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 .bstat .bl{color:var(--dim);font-size:.52rem;white-space:nowrap;}
 .bstat .bv{color:var(--text);font-size:.64rem;white-space:nowrap;}
 .bstat .bv.w{color:var(--orange);}.bstat .bv.c{color:var(--red);}
-#legend-strip{display:flex;align-items:center;padding:0 8px;gap:8px;border-right:1px solid var(--border);flex-shrink:0;}
-.ls-item{display:flex;align-items:center;gap:3px;font-size:.54rem;color:var(--dim);white-space:nowrap;}
+#legend-strip{display:flex;align-items:center;padding:0 8px;gap:8px;border-right:1px solid var(--border);flex-shrink:0;overflow-x:auto;}
+.ls-item{display:flex;align-items:center;gap:4px;white-space:nowrap;flex-shrink:0;}
 .ls-dot{width:8px;height:8px;border-radius:2px;opacity:.8;flex-shrink:0;}
+.ls-lbl{font-size:.52rem;color:var(--dim);line-height:1.2;}
+.ls-val{font-size:.62rem;color:var(--text);line-height:1.2;}
+.ls-val.w{color:var(--orange);}.ls-val.c{color:var(--red);}
 
 /* Wind badge */
 #windbadge{
@@ -250,25 +253,17 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;heigh
 
 <div id="bottombar">
   <div id="legend-strip">
-    <div class="ls-item"><div class="ls-dot" style="background:#ff2a2a"></div>Fireball</div>
-    <div class="ls-item"><div class="ls-dot" style="background:#ff5500"></div>Severe</div>
-    <div class="ls-item"><div class="ls-dot" style="background:#ff8800"></div>Moderate</div>
-    <div class="ls-item"><div class="ls-dot" style="background:#ffcc00"></div>Glass</div>
-    <div class="ls-item" style="margin-left:4px;border-left:1px solid var(--border);padding-left:6px;"><div class="ls-dot" style="border-radius:50%;background:#ff2a2a"></div>IDLH</div>
-    <div class="ls-item"><div class="ls-dot" style="border-radius:50%;background:#ff7300"></div>ERPG-2</div>
-    <div class="ls-item"><div class="ls-dot" style="border-radius:50%;background:#ffd000"></div>ERPG-1</div>
-    <div class="ls-item" style="margin-left:4px;border-left:1px solid var(--border);padding-left:6px;"><div class="ls-dot" style="background:#ffd000;opacity:.4"></div>Evac</div>
-    <div class="ls-item" style="margin-left:4px;border-left:1px solid var(--border);padding-left:6px;"><div class="ls-dot" style="border-radius:50%;background:#00e676"></div>Shelter</div>
-    <div class="ls-item" style="margin-left:4px;border-left:1px solid var(--border);padding-left:6px;color:#00e676;">☎ (714) 741-5444</div>
+    <div class="ls-item"><div class="ls-dot" style="background:#ff2a2a"></div><div><div class="ls-lbl">Fireball</div><div class="ls-val c" id="ls-fb">—</div></div></div>
+    <div class="ls-item"><div class="ls-dot" style="background:#ff5500"></div><div><div class="ls-lbl">Severe</div><div class="ls-val w" id="ls-sv">—</div></div></div>
+    <div class="ls-item"><div class="ls-dot" style="background:#ff8800"></div><div><div class="ls-lbl">Moderate</div><div class="ls-val w" id="ls-md">—</div></div></div>
+    <div class="ls-item"><div class="ls-dot" style="background:#ffcc00"></div><div><div class="ls-lbl">Glass</div><div class="ls-val" id="ls-gl">—</div></div></div>
+    <div class="ls-item" style="margin-left:4px;border-left:1px solid var(--border);padding-left:6px;"><div class="ls-dot" style="border-radius:50%;background:#ff2a2a"></div><div><div class="ls-lbl">IDLH</div><div class="ls-val c" id="ls-id">—</div></div></div>
+    <div class="ls-item"><div class="ls-dot" style="border-radius:50%;background:#ff7300"></div><div><div class="ls-lbl">ERPG-2</div><div class="ls-val w" id="ls-e2">—</div></div></div>
+    <div class="ls-item"><div class="ls-dot" style="border-radius:50%;background:#ffd000"></div><div><div class="ls-lbl">ERPG-1</div><div class="ls-val" id="ls-e1">—</div></div></div>
+    <div class="ls-item" style="margin-left:4px;border-left:1px solid var(--border);padding-left:6px;"><div class="ls-dot" style="background:#ffd000;opacity:.4"></div><div><div class="ls-lbl">Evac zone</div><div class="ls-val" style="color:rgba(255,208,0,.6)">~50k residents</div></div></div>
+    <div class="ls-item" style="margin-left:4px;border-left:1px solid var(--border);padding-left:6px;"><div class="ls-dot" style="border-radius:50%;background:#00e676"></div><div><div class="ls-lbl">Shelters</div><div class="ls-val" style="color:#00e676">5 active</div></div></div>
+    <div class="ls-item" style="margin-left:4px;border-left:1px solid var(--border);padding-left:6px;color:#00e676;flex-direction:column;align-items:flex-start;"><div class="ls-lbl" style="color:var(--dim)">EMERGENCY</div><div class="ls-val" style="color:#00e676">☎ (714) 741-5444</div></div>
   </div>
-  <div class="bstat"><div class="bl">TNT EQUIV</div><div class="bv c" id="ib-tnt">—</div></div>
-  <div class="bstat"><div class="bl">FIREBALL</div><div class="bv c" id="ib-fb">—</div></div>
-  <div class="bstat"><div class="bl">SEVERE</div><div class="bv w" id="ib-sv">—</div></div>
-  <div class="bstat"><div class="bl">MODERATE</div><div class="bv w" id="ib-md">—</div></div>
-  <div class="bstat"><div class="bl">GLASS BREAK</div><div class="bv" id="ib-gl">—</div></div>
-  <div class="bstat"><div class="bl">IDLH (HVY-GAS)</div><div class="bv c" id="ib-id">—</div></div>
-  <div class="bstat"><div class="bl">ERPG-2</div><div class="bv w" id="ib-e2">—</div></div>
-  <div class="bstat"><div class="bl">ERPG-1</div><div class="bv" id="ib-e1">—</div></div>
 </div>
 
 <script>
@@ -675,6 +670,7 @@ function updateUI(b,p){
   document.getElementById('d-id').textContent=miStr(p.idlh);
   document.getElementById('d-e2').textContent=miStr(p.erpg2);
   document.getElementById('d-e1').textContent=miStr(p.erpg1);
+  // bottom bar stat cells
   document.getElementById('ib-tnt').textContent=b.tntMT.toFixed(1)+' MT';
   document.getElementById('ib-fb').textContent=ftStr(b.fireball);
   document.getElementById('ib-sv').textContent=ftStr(b.severe);
@@ -683,6 +679,14 @@ function updateUI(b,p){
   document.getElementById('ib-id').textContent=miStr(p.idlh);
   document.getElementById('ib-e2').textContent=miStr(p.erpg2);
   document.getElementById('ib-e1').textContent=miStr(p.erpg1);
+  // legend strip inline values
+  document.getElementById('ls-fb').textContent=ftStr(b.fireball);
+  document.getElementById('ls-sv').textContent=ftStr(b.severe);
+  document.getElementById('ls-md').textContent=ftStr(b.moderate);
+  document.getElementById('ls-gl').textContent=miStr(b.glass);
+  document.getElementById('ls-id').textContent=miStr(p.idlh);
+  document.getElementById('ls-e2').textContent=miStr(p.erpg2);
+  document.getElementById('ls-e1').textContent=miStr(p.erpg1);
 }
 
 // ═══════════════════════════════════════════════════════════
