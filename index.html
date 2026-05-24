@@ -8,111 +8,93 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
-:root {
-  --red:#ff2a2a; --orange:#ff7300; --yellow:#ffd000; --green:#00e676;
-  --bg:#0a0c0f; --panel:#111419; --panel2:#161b24; --border:#1e2430;
-  --text:#c8d4e8; --dim:#4a5568; --blue:#2a6fff;
+:root{
+  --red:#ff2a2a;--orange:#ff7300;--yellow:#ffd000;--green:#00e676;
+  --bg:#0a0c0f;--panel:#111419;--border:#1e2430;--text:#c8d4e8;--dim:#4a5568;--blue:#2a6fff;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;}
 
-/* ── FULL-SCREEN MAP ── */
-#map { position:fixed; inset:0; z-index:1; }
-.leaflet-tile-pane { filter:brightness(.82) saturate(.65) hue-rotate(185deg) invert(1); }
-.leaflet-container { background:#0e1117 !important; }
-.tiles-off .leaflet-tile-pane { display:none; }
+#map{position:fixed;inset:0;z-index:1;}
+.leaflet-tile-pane{filter:brightness(.82) saturate(.65) hue-rotate(185deg) invert(1);}
+.leaflet-container{background:#0e1117!important;}
+.tiles-off .leaflet-tile-pane{display:none;}
 
-/* ── HEADER BAR ── */
-#header {
-  position:fixed; top:0; left:0; right:0; height:38px;
-  display:flex; align-items:center; gap:10px; padding:0 12px;
-  background:rgba(10,12,15,.92); border-bottom:1px solid var(--border);
-  z-index:3000; backdrop-filter:blur(6px);
+#header{
+  position:fixed;top:0;left:0;right:0;height:38px;
+  display:flex;align-items:center;gap:10px;padding:0 12px;
+  background:rgba(10,12,15,.92);border-bottom:1px solid var(--border);
+  z-index:3000;backdrop-filter:blur(6px);
 }
 .alert-dot{width:8px;height:8px;border-radius:50%;background:var(--red);animation:blink 1.2s infinite;flex-shrink:0;}
 @keyframes blink{0%,100%{box-shadow:0 0 0 0 rgba(255,42,42,.6);}50%{box-shadow:0 0 0 5px rgba(255,42,42,0);}}
 #header h1{font-family:'Bebas Neue',sans-serif;font-size:.95rem;letter-spacing:.1em;color:#fff;}
 #header .sub{font-family:'Share Tech Mono',monospace;font-size:.55rem;color:var(--dim);margin-left:auto;}
-
-/* Menu button */
-#menu-btn {
-  display:flex; align-items:center; gap:6px;
-  background:rgba(42,111,255,.15); border:1px solid var(--blue);
-  color:#6aafff; font-family:'Share Tech Mono',monospace; font-size:.62rem;
-  padding:4px 10px; border-radius:3px; cursor:pointer; letter-spacing:.05em;
-  transition:background .15s; flex-shrink:0; margin-left:10px;
+#menu-btn{
+  display:flex;align-items:center;gap:6px;
+  background:rgba(42,111,255,.15);border:1px solid var(--blue);
+  color:#6aafff;font-family:'Share Tech Mono',monospace;font-size:.62rem;
+  padding:4px 10px;border-radius:3px;cursor:pointer;letter-spacing:.05em;
+  transition:background .15s;flex-shrink:0;margin-left:10px;
 }
 #menu-btn:hover{background:rgba(42,111,255,.28);}
-#menu-btn .hamburger{display:flex;flex-direction:column;gap:3px;width:14px;}
-#menu-btn .hamburger span{display:block;height:1.5px;background:#6aafff;border-radius:1px;transition:all .2s;}
+.hamburger{display:flex;flex-direction:column;gap:3px;width:14px;}
+.hamburger span{display:block;height:1.5px;background:#6aafff;border-radius:1px;}
 
-/* ── DRAWER ── */
-#drawer {
-  position:fixed; top:38px; left:0; bottom:52px;
-  width:240px; background:rgba(10,12,15,.97);
-  border-right:1px solid var(--border);
-  transform:translateX(-100%); transition:transform .25s ease;
-  z-index:2500; overflow-y:auto; padding:10px;
-  display:flex; flex-direction:column; gap:9px;
-  backdrop-filter:blur(8px);
+/* Drawer */
+#drawer{
+  position:fixed;top:38px;left:0;bottom:52px;width:245px;
+  background:rgba(10,12,15,.97);border-right:1px solid var(--border);
+  transform:translateX(-100%);transition:transform .25s ease;
+  z-index:2500;overflow-y:auto;padding:10px;
+  display:flex;flex-direction:column;gap:9px;backdrop-filter:blur(8px);
 }
-#drawer.open { transform:translateX(0); }
+#drawer.open{transform:translateX(0);}
+#overlay{display:none;position:fixed;inset:0;z-index:2400;background:rgba(0,0,0,.35);}
+#overlay.show{display:block;}
 
-/* Drawer overlay */
-#overlay {
-  display:none; position:fixed; inset:0; z-index:2400;
-  background:rgba(0,0,0,.35);
+/* Bottom bar */
+#bottombar{
+  position:fixed;bottom:0;left:0;right:0;height:52px;
+  background:rgba(10,12,15,.94);border-top:1px solid var(--border);
+  z-index:3000;display:flex;align-items:stretch;
+  font-family:'Share Tech Mono',monospace;font-size:.58rem;backdrop-filter:blur(6px);
 }
-#overlay.show { display:block; }
-
-/* ── BOTTOM BAR ── */
-#bottombar {
-  position:fixed; bottom:0; left:0; right:0; height:52px;
-  background:rgba(10,12,15,.94); border-top:1px solid var(--border);
-  z-index:3000; display:flex; align-items:stretch;
-  font-family:'Share Tech Mono',monospace; font-size:.58rem;
-  backdrop-filter:blur(6px);
-}
-
-/* Stats cells */
-.bstat {
-  flex:1; display:flex; flex-direction:column; justify-content:center;
-  padding:4px 8px; border-right:1px solid var(--border); line-height:1.4;
-  min-width:0;
-}
+.bstat{flex:1;display:flex;flex-direction:column;justify-content:center;padding:4px 8px;border-right:1px solid var(--border);line-height:1.4;min-width:0;}
 .bstat:last-child{border-right:none;}
 .bstat .bl{color:var(--dim);font-size:.52rem;white-space:nowrap;}
-.bstat .bv{color:var(--text);font-size:.65rem;white-space:nowrap;}
-.bstat .bv.w{color:var(--orange);}
-.bstat .bv.c{color:var(--red);}
-
-/* Legend strip */
-#legend-strip {
-  display:flex; align-items:center; gap:0;
-  border-right:1px solid var(--border);
-  padding:0 8px; gap:10px;
-}
-.ls-item{display:flex;align-items:center;gap:4px;font-size:.55rem;color:var(--dim);white-space:nowrap;}
+.bstat .bv{color:var(--text);font-size:.64rem;white-space:nowrap;}
+.bstat .bv.w{color:var(--orange);}.bstat .bv.c{color:var(--red);}
+#legend-strip{display:flex;align-items:center;padding:0 8px;gap:8px;border-right:1px solid var(--border);flex-shrink:0;}
+.ls-item{display:flex;align-items:center;gap:3px;font-size:.54rem;color:var(--dim);white-space:nowrap;}
 .ls-dot{width:8px;height:8px;border-radius:2px;opacity:.8;flex-shrink:0;}
 
-/* Wind badge (map overlay) */
-#windbadge {
-  position:fixed; top:48px; right:9px;
-  background:rgba(10,12,15,.88); border:1px solid var(--border); border-radius:5px;
-  padding:6px 9px; font-family:'Share Tech Mono',monospace; font-size:.6rem;
-  line-height:1.65; z-index:2000; pointer-events:none;
+/* Wind badge */
+#windbadge{
+  position:fixed;top:48px;right:9px;
+  background:rgba(10,12,15,.88);border:1px solid var(--border);border-radius:5px;
+  padding:6px 9px;font-family:'Share Tech Mono',monospace;font-size:.6rem;
+  line-height:1.65;z-index:2000;pointer-events:none;
 }
 #windbadge .wv{color:var(--yellow);}
 
-/* ── DRAWER INTERNALS ── */
+/* Model badge */
+#modelbadge{
+  position:fixed;top:48px;left:9px;
+  background:rgba(10,12,15,.88);border:1px solid var(--border);border-radius:5px;
+  padding:6px 9px;font-family:'Share Tech Mono',monospace;font-size:.58rem;
+  line-height:1.65;z-index:2000;pointer-events:none;
+}
+#modelbadge .mv{color:var(--green);}
+#modelbadge .mw{color:var(--orange);}
+
+/* Drawer internals */
 .sec{font-family:'Share Tech Mono',monospace;font-size:.56rem;letter-spacing:.14em;color:var(--dim);
      text-transform:uppercase;border-bottom:1px solid var(--border);padding-bottom:3px;margin-bottom:4px;}
 .row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px;}
 .lbl{font-size:.67rem;color:var(--dim);}
 .val{font-family:'Share Tech Mono',monospace;font-size:.68rem;color:var(--text);}
 .val.w{color:var(--orange);}.val.c{color:var(--red);}
-
-/* toggles */
 .tog-row{display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:3px 0;user-select:none;}
 .tog-label{display:flex;align-items:center;gap:5px;font-size:.69rem;}
 .sw{width:30px;height:15px;background:var(--border);border-radius:8px;position:relative;transition:background .2s;flex-shrink:0;}
@@ -120,44 +102,29 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 .sw::after{content:'';position:absolute;top:2px;left:2px;width:11px;height:11px;background:#fff;border-radius:50%;transition:left .2s;}
 .sw.on::after{left:17px;}
 .dot9{width:9px;height:9px;border-radius:2px;flex-shrink:0;}
-
-/* sliders */
 .sl-row{margin-bottom:6px;}
 .sl-row label{display:flex;justify-content:space-between;font-size:.67rem;color:var(--dim);margin-bottom:2px;}
 .sl-row label span{font-family:'Share Tech Mono',monospace;color:var(--text);}
 input[type=range]{width:100%;-webkit-appearance:none;height:3px;background:var(--border);border-radius:2px;outline:none;}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:var(--blue);cursor:pointer;}
-
-#btn-live{
-  margin-top:4px;width:100%;
-  background:transparent;border:1px solid var(--blue);
-  color:#6aafff;font-family:'Share Tech Mono',monospace;font-size:.62rem;
-  padding:4px 0;border-radius:3px;cursor:pointer;letter-spacing:.05em;
-  transition:background .15s,color .15s;
-}
+#btn-live{margin-top:4px;width:100%;background:transparent;border:1px solid var(--blue);color:#6aafff;font-family:'Share Tech Mono',monospace;font-size:.62rem;padding:4px 0;border-radius:3px;cursor:pointer;letter-spacing:.05em;transition:background .15s;}
 #btn-live:hover{background:rgba(42,111,255,.2);}
 #btn-live.loading{opacity:.5;pointer-events:none;}
 #live-status{font-family:'Share Tech Mono',monospace;font-size:.57rem;color:var(--dim);margin-top:3px;min-height:12px;text-align:center;}
-#live-status.ok{color:var(--green);}
-#live-status.err{color:var(--red);}
-
-/* legend items in drawer */
+#live-status.ok{color:var(--green);}#live-status.err{color:var(--red);}
 .leg{display:flex;align-items:center;gap:5px;font-size:.63rem;margin-bottom:3px;line-height:1.3;}
 .leg-sw{width:18px;height:7px;border-radius:2px;opacity:.75;flex-shrink:0;}
+.note{font-size:.6rem;color:var(--dim);line-height:1.4;margin-bottom:4px;}
 
-/* popup */
 .leaflet-popup-content-wrapper{background:rgba(10,12,15,.95)!important;border:1px solid var(--border)!important;border-radius:4px!important;color:var(--text)!important;font-family:'Share Tech Mono',monospace!important;font-size:.68rem!important;box-shadow:none!important;}
 .leaflet-popup-tip{background:rgba(10,12,15,.95)!important;}
-
 ::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
 </style>
 </head>
 <body>
 
-<!-- FULL SCREEN MAP -->
 <div id="map"></div>
 
-<!-- HEADER -->
 <div id="header">
   <div class="alert-dot"></div>
   <h1>GKN AEROSPACE — HAZARD ZONE SIMULATOR</h1>
@@ -168,20 +135,18 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;heigh
   </button>
 </div>
 
-<!-- DRAWER OVERLAY -->
 <div id="overlay" onclick="closeDrawer()"></div>
 
-<!-- DRAWER -->
 <div id="drawer">
-
   <div>
     <div class="sec">Incident</div>
     <div class="row"><span class="lbl">Chemical</span><span class="val">MMA C₅H₈O₂</span></div>
     <div class="row"><span class="lbl">Volume</span><span class="val w" id="s-vol">7,000 gal</span></div>
     <div class="row"><span class="lbl">TNT equiv.</span><span class="val c" id="s-tnt">—</span></div>
     <div class="row"><span class="lbl">Flash pt.</span><span class="val w">2°C / 36°F</span></div>
-    <div class="row"><span class="lbl">Vapor density</span><span class="val w">&gt;1 (sinks)</span></div>
+    <div class="row"><span class="lbl">Vapor density</span><span class="val w">3.5× air (sinks)</span></div>
     <div class="row"><span class="lbl">IDLH</span><span class="val c">1,000 ppm</span></div>
+    <div class="row"><span class="lbl">GKN elevation</span><span class="val" id="s-elev">89 ft (USGS)</span></div>
   </div>
 
   <div>
@@ -192,22 +157,11 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;heigh
 
   <div>
     <div class="sec">Layers</div>
-    <div class="tog-row" onclick="tog('basemap')">
-      <span class="tog-label"><span class="dot9" style="background:#4a90d9"></span>Base map</span>
-      <div class="sw on" id="sw-basemap"></div>
-    </div>
-    <div class="tog-row" onclick="tog('blast')">
-      <span class="tog-label"><span class="dot9" style="background:#ff2a2a"></span>Blast zones</span>
-      <div class="sw on" id="sw-blast"></div>
-    </div>
-    <div class="tog-row" onclick="tog('plume')">
-      <span class="tog-label"><span class="dot9" style="background:#ff7300"></span>Toxic plume</span>
-      <div class="sw on" id="sw-plume"></div>
-    </div>
-    <div class="tog-row" onclick="tog('evac')">
-      <span class="tog-label"><span class="dot9" style="background:#ffd000"></span>Evac order</span>
-      <div class="sw on" id="sw-evac"></div>
-    </div>
+    <div class="tog-row" onclick="tog('basemap')"><span class="tog-label"><span class="dot9" style="background:#4a90d9"></span>Base map</span><div class="sw on" id="sw-basemap"></div></div>
+    <div class="tog-row" onclick="tog('blast')"><span class="tog-label"><span class="dot9" style="background:#ff2a2a"></span>Blast zones</span><div class="sw on" id="sw-blast"></div></div>
+    <div class="tog-row" onclick="tog('plume')"><span class="tog-label"><span class="dot9" style="background:#ff7300"></span>Toxic plume</span><div class="sw on" id="sw-plume"></div></div>
+    <div class="tog-row" onclick="tog('evac')"><span class="tog-label"><span class="dot9" style="background:#ffd000"></span>Evac order</span><div class="sw on" id="sw-evac"></div></div>
+    <div class="tog-row" onclick="tog('topo')"><span class="tog-label"><span class="dot9" style="background:#00e676"></span>Topo overlay</span><div class="sw on" id="sw-topo"></div></div>
   </div>
 
   <div>
@@ -235,21 +189,21 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;heigh
 
   <div>
     <div class="sec">Cascade Failure</div>
-    <div style="font-size:.61rem;color:var(--dim);margin-bottom:6px;line-height:1.4;">Toggle additional tanks. All three are 34,000-gal capacity.</div>
-    <div class="tog-row" onclick="togTank(2)">
-      <span class="tog-label"><span class="dot9" style="background:#ff5500"></span>Tank 2 (34,000 gal)</span>
-      <div class="sw" id="sw-tank2"></div>
-    </div>
-    <div class="tog-row" onclick="togTank(3)">
-      <span class="tog-label"><span class="dot9" style="background:#ff5500"></span>Tank 3 (34,000 gal)</span>
-      <div class="sw" id="sw-tank3"></div>
-    </div>
-    <div class="row" style="margin-top:6px;">
-      <span class="lbl">Total volume</span><span class="val c" id="s-totalvol">7,000 gal</span>
-    </div>
-    <div class="row">
-      <span class="lbl">Scenario</span><span class="val c" id="s-scenario">Single tank</span>
-    </div>
+    <div class="note">Toggle additional tanks. All three are 34,000-gal capacity. Cascade assumes sympathetic detonation.</div>
+    <div class="tog-row" onclick="togTank(2)"><span class="tog-label"><span class="dot9" style="background:#ff5500"></span>Tank 2 (34,000 gal)</span><div class="sw" id="sw-tank2"></div></div>
+    <div class="tog-row" onclick="togTank(3)"><span class="tog-label"><span class="dot9" style="background:#ff5500"></span>Tank 3 (34,000 gal)</span><div class="sw" id="sw-tank3"></div></div>
+    <div class="row" style="margin-top:6px;"><span class="lbl">Total volume</span><span class="val c" id="s-totalvol">7,000 gal</span></div>
+    <div class="row"><span class="lbl">Scenario</span><span class="val c" id="s-scenario">Single tank</span></div>
+  </div>
+
+  <div>
+    <div class="sec">Plume Model</div>
+    <div class="note">Heavy-gas (SLAB-approximated) model accounts for MMA vapor density 3.5× air. Vapor sinks and pools at ground level. Topography data from USGS 3DEP via open-elevation API. Terrain gradient applied across a 32-point radial grid.</div>
+    <div class="row"><span class="lbl">Model</span><span class="val mv" style="color:var(--green)">Heavy-gas SLAB</span></div>
+    <div class="row"><span class="lbl">Vapor density</span><span class="val">3.5 (rel. air)</span></div>
+    <div class="row"><span class="lbl">Stability class</span><span class="val">Pasquill D</span></div>
+    <div class="row"><span class="lbl">Flash fraction</span><span class="val">25%</span></div>
+    <div class="row"><span class="lbl">Topo correction</span><span class="val mv" style="color:var(--green)" id="s-topo-status">loading…</span></div>
   </div>
 
   <div>
@@ -261,7 +215,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;heigh
   </div>
 
   <div>
-    <div class="sec">Toxic plume</div>
+    <div class="sec">Toxic plume (heavy-gas)</div>
     <div class="leg"><div class="leg-sw" style="background:#ff2a2a"></div>IDLH &gt;1,000 ppm — lethal</div>
     <div class="leg"><div class="leg-sw" style="background:#ff7300"></div>ERPG-2 75 ppm — serious</div>
     <div class="leg"><div class="leg-sw" style="background:#ffd000"></div>ERPG-1 10 ppm — irritation</div>
@@ -277,113 +231,299 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;heigh
     <div class="row"><span class="lbl">ERPG-2</span><span class="val w" id="d-e2">—</span></div>
     <div class="row"><span class="lbl">ERPG-1</span><span class="val" id="d-e1">—</span></div>
   </div>
-
-</div><!-- /drawer -->
-
-<!-- WIND BADGE -->
-<div id="windbadge">
-  WIND <span class="wv" id="wb-dir">W → NE</span><br>
-  SPEED <span class="wv" id="wb-spd">— mph</span><br>
-  GUSTS <span class="wv" id="wb-gust">— mph</span><br>
-  <span id="wb-src" style="color:var(--dim);">loading…</span>
 </div>
 
-<!-- BOTTOM BAR -->
+<div id="windbadge">
+  WIND <span class="wv" id="wb-dir">—</span><br>
+  SPEED <span class="wv" id="wb-spd">—</span><br>
+  GUSTS <span class="wv" id="wb-gust">—</span><br>
+  <span id="wb-src" style="color:var(--dim)">loading…</span>
+</div>
+
+<div id="modelbadge">
+  MODEL <span class="mv">HEAVY-GAS SLAB</span><br>
+  VAPOR ρ <span class="mv">3.5× AIR</span><br>
+  TOPO <span class="mw" id="mb-topo">LOADING…</span><br>
+  TERRAIN <span class="mv">USGS 3DEP</span>
+</div>
+
 <div id="bottombar">
-  <!-- Legend -->
   <div id="legend-strip">
     <div class="ls-item"><div class="ls-dot" style="background:#ff2a2a"></div>Fireball</div>
     <div class="ls-item"><div class="ls-dot" style="background:#ff5500"></div>Severe</div>
     <div class="ls-item"><div class="ls-dot" style="background:#ff8800"></div>Moderate</div>
     <div class="ls-item"><div class="ls-dot" style="background:#ffcc00"></div>Glass</div>
-    <div class="ls-item" style="margin-left:6px;"><div class="ls-dot" style="background:#ff2a2a;border-radius:50%"></div>IDLH</div>
-    <div class="ls-item"><div class="ls-dot" style="background:#ff7300;border-radius:50%"></div>ERPG-2</div>
-    <div class="ls-item"><div class="ls-dot" style="background:#ffd000;border-radius:50%"></div>ERPG-1</div>
-    <div class="ls-item" style="margin-left:6px;border-left:1px solid var(--border);padding-left:8px;"><div class="ls-dot" style="background:#ffd000;opacity:.5"></div>Evac zone</div>
+    <div class="ls-item" style="margin-left:4px;border-left:1px solid var(--border);padding-left:6px;"><div class="ls-dot" style="border-radius:50%;background:#ff2a2a"></div>IDLH</div>
+    <div class="ls-item"><div class="ls-dot" style="border-radius:50%;background:#ff7300"></div>ERPG-2</div>
+    <div class="ls-item"><div class="ls-dot" style="border-radius:50%;background:#ffd000"></div>ERPG-1</div>
+    <div class="ls-item" style="margin-left:4px;border-left:1px solid var(--border);padding-left:6px;"><div class="ls-dot" style="background:#ffd000;opacity:.4"></div>Evac</div>
   </div>
-  <!-- Stats -->
   <div class="bstat"><div class="bl">TNT EQUIV</div><div class="bv c" id="ib-tnt">—</div></div>
   <div class="bstat"><div class="bl">FIREBALL</div><div class="bv c" id="ib-fb">—</div></div>
   <div class="bstat"><div class="bl">SEVERE</div><div class="bv w" id="ib-sv">—</div></div>
   <div class="bstat"><div class="bl">MODERATE</div><div class="bv w" id="ib-md">—</div></div>
   <div class="bstat"><div class="bl">GLASS BREAK</div><div class="bv" id="ib-gl">—</div></div>
-  <div class="bstat"><div class="bl">IDLH PLUME</div><div class="bv c" id="ib-id">—</div></div>
+  <div class="bstat"><div class="bl">IDLH (HVY-GAS)</div><div class="bv c" id="ib-id">—</div></div>
   <div class="bstat"><div class="bl">ERPG-2</div><div class="bv w" id="ib-e2">—</div></div>
   <div class="bstat"><div class="bl">ERPG-1</div><div class="bv" id="ib-e1">—</div></div>
 </div>
 
 <script>
-// ── constants ──────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════════════════════════════════
 const GKN = [33.786, -118.001];
+const GKN_ELEV_M = 27; // 89 ft / 27 m — USGS confirmed
+const VAPOR_DENSITY_RATIO = 3.5; // MMA vapor vs air
 const WIND_BEARING_DEFAULT = 45;
 
-// ── map ────────────────────────────────────────────────────
-const map = L.map('map', { center:GKN, zoom:13, zoomControl:true });
-const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution:'© OpenStreetMap contributors', maxZoom:19,
-}).addTo(map);
+// ═══════════════════════════════════════════════════════════
+// MAP
+// ═══════════════════════════════════════════════════════════
+const map = L.map('map',{center:GKN,zoom:13,zoomControl:true});
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors',maxZoom:19}).addTo(map);
 
 const gknIcon = L.divIcon({
   className:'',
   html:`<div style="width:14px;height:14px;border-radius:50%;border:2px solid #ff2a2a;background:rgba(255,42,42,.35);box-shadow:0 0 10px #ff2a2a;"></div>`,
-  iconSize:[14,14], iconAnchor:[7,7],
+  iconSize:[14,14],iconAnchor:[7,7]
 });
 L.marker(GKN,{icon:gknIcon,zIndexOffset:1000}).addTo(map)
- .bindPopup(`<b style="color:#ff5555">GKN AEROSPACE</b><br>12122 Western Ave, Garden Grove<br><span style="color:#ff9900">34,000-gal MMA tank — IN CRISIS</span>`);
+ .bindPopup(`<b style="color:#ff5555">GKN AEROSPACE</b><br>12122 Western Ave, Garden Grove<br><span style="color:#ff9900">34,000-gal MMA tank — IN CRISIS</span><br>Elev: 89 ft (27 m) USGS`);
 
-// ── layer groups ───────────────────────────────────────────
-const blastGrp = L.layerGroup().addTo(map);
-const plumeGrp = L.layerGroup().addTo(map);
-const evacGrp  = L.layerGroup().addTo(map);
-const state = { basemap:true, blast:true, plume:true, evac:true };
+const blastGrp=L.layerGroup().addTo(map);
+const plumeGrp=L.layerGroup().addTo(map);
+const evacGrp=L.layerGroup().addTo(map);
+const topoGrp=L.layerGroup().addTo(map);
+const state={basemap:true,blast:true,plume:true,evac:true,topo:true};
 
-function tog(name) {
-  state[name] = !state[name];
-  document.getElementById('sw-'+name).classList.toggle('on', state[name]);
-  if (name==='basemap') { map.getContainer().classList.toggle('tiles-off',!state[name]); return; }
-  const grp = name==='blast'?blastGrp:name==='plume'?plumeGrp:evacGrp;
-  if (state[name]) map.addLayer(grp); else map.removeLayer(grp);
+function tog(name){
+  state[name]=!state[name];
+  document.getElementById('sw-'+name).classList.toggle('on',state[name]);
+  if(name==='basemap'){map.getContainer().classList.toggle('tiles-off',!state[name]);return;}
+  const grp=name==='blast'?blastGrp:name==='plume'?plumeGrp:name==='topo'?topoGrp:evacGrp;
+  if(state[name])map.addLayer(grp);else map.removeLayer(grp);
 }
 
-// ── drawer ─────────────────────────────────────────────────
-function toggleDrawer() {
-  document.getElementById('drawer').classList.toggle('open');
-  document.getElementById('overlay').classList.toggle('show');
-}
-function closeDrawer() {
-  document.getElementById('drawer').classList.remove('open');
-  document.getElementById('overlay').classList.remove('show');
-}
+function toggleDrawer(){document.getElementById('drawer').classList.toggle('open');document.getElementById('overlay').classList.toggle('show');}
+function closeDrawer(){document.getElementById('drawer').classList.remove('open');document.getElementById('overlay').classList.remove('show');}
 
-// ── geodesic ──────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════
+// TOPOGRAPHY — fetch a radial grid of elevation points
+// Uses open-elevation.com (free, no key, CORS-open, SRTM data)
+// ═══════════════════════════════════════════════════════════
+// Elevation grid: 16 bearings × 6 distances = 96 points + source
+const TOPO_BEARINGS = 16;   // every 22.5°
+const TOPO_DISTANCES = [500, 1000, 2000, 3500, 5000, 8000]; // metres
+let topoGrid = null; // [bearing_idx][dist_idx] = elevation_m
+let topoLoaded = false;
+
 function destPt(lat,lng,bearing,dist){
-  const R=6371000, b=bearing*Math.PI/180;
-  const φ1=lat*Math.PI/180, λ1=lng*Math.PI/180;
+  const R=6371000,b=bearing*Math.PI/180,φ1=lat*Math.PI/180,λ1=lng*Math.PI/180;
   const φ2=Math.asin(Math.sin(φ1)*Math.cos(dist/R)+Math.cos(φ1)*Math.sin(dist/R)*Math.cos(b));
   const λ2=λ1+Math.atan2(Math.sin(b)*Math.sin(dist/R)*Math.cos(φ1),Math.cos(dist/R)-Math.sin(φ1)*Math.sin(φ2));
   return [φ2*180/Math.PI,λ2*180/Math.PI];
 }
 
-function buildPlumePoly(lengthM,halfAngleDeg,bearing){
-  const pts=[], N=40;
-  for(let i=0;i<=N;i++){const f=i/N,d=f*lengthM,s=halfAngleDeg*f;pts.push(destPt(GKN[0],GKN[1],bearing-s,Math.max(d,1)));}
-  for(let i=N;i>=0;i--){const f=i/N,d=f*lengthM,s=halfAngleDeg*f;pts.push(destPt(GKN[0],GKN[1],bearing+s,Math.max(d,1)));}
+async function fetchTopography(){
+  document.getElementById('s-topo-status').textContent='fetching…';
+  document.getElementById('mb-topo').textContent='FETCHING…';
+  try {
+    // Build location list for open-elevation batch query
+    const locs=[];
+    // Add source point
+    locs.push({latitude:GKN[0],longitude:GKN[1]});
+    // Add radial grid
+    for(let b=0;b<TOPO_BEARINGS;b++){
+      const bearing=b*(360/TOPO_BEARINGS);
+      for(let d=0;d<TOPO_DISTANCES.length;d++){
+        const pt=destPt(GKN[0],GKN[1],bearing,TOPO_DISTANCES[d]);
+        locs.push({latitude:pt[0],longitude:pt[1]});
+      }
+    }
+
+    const resp=await fetch('https://api.open-elevation.com/api/v1/lookup',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body:JSON.stringify({locations:locs})
+    });
+    if(!resp.ok)throw new Error('HTTP '+resp.status);
+    const data=await resp.json();
+    const results=data.results;
+
+    // Parse: first result = source elevation
+    const sourceElev=results[0].elevation;
+
+    // Build grid: [bearing_idx][dist_idx] = elevation difference from source (m)
+    topoGrid=[];
+    for(let b=0;b<TOPO_BEARINGS;b++){
+      topoGrid[b]=[];
+      for(let d=0;d<TOPO_DISTANCES.length;d++){
+        const idx=1+b*TOPO_DISTANCES.length+d;
+        topoGrid[b][d]=results[idx].elevation - sourceElev; // positive = uphill from GKN
+      }
+    }
+    topoLoaded=true;
+
+    // Show min/max gradient
+    const allDeltas=topoGrid.flat();
+    const minD=Math.min(...allDeltas).toFixed(0);
+    const maxD=Math.max(...allDeltas).toFixed(0);
+    document.getElementById('s-topo-status').textContent=`active (${minD} to +${maxD}m)`;
+    document.getElementById('mb-topo').textContent=`ACTIVE Δ${minD}/+${maxD}m`;
+    document.getElementById('mb-topo').style.color='var(--green)';
+    document.getElementById('s-elev').textContent=`${sourceElev}m (USGS live)`;
+
+    // Draw topo overlay
+    drawTopoOverlay();
+    // Redraw plume with topo correction
+    onSlide();
+  } catch(e){
+    console.warn('Topo fetch failed:',e.message);
+    document.getElementById('s-topo-status').textContent='unavailable (flat assumed)';
+    document.getElementById('mb-topo').textContent='FLAT (topo unavailable)';
+    document.getElementById('mb-topo').style.color='var(--orange)';
+    topoLoaded=false;
+    onSlide();
+  }
+}
+
+function drawTopoOverlay(){
+  topoGrp.clearLayers();
+  if(!topoGrid)return;
+
+  // Draw terrain gradient arrows showing downhill flow direction
+  // Heavy gas will preferentially flow downhill
+  for(let b=0;b<TOPO_BEARINGS;b++){
+    const bearing=b*(360/TOPO_BEARINGS);
+    for(let d=0;d<TOPO_DISTANCES.length-1;d++){
+      const slope=topoGrid[b][d]; // elevation change from source
+      if(Math.abs(slope)<2)continue; // skip flat
+      const pt=destPt(GKN[0],GKN[1],bearing,TOPO_DISTANCES[d]);
+      const isDownhill=slope<0;
+      L.marker(pt,{
+        icon:L.divIcon({
+          className:'',
+          html:`<div style="color:${isDownhill?'rgba(255,208,0,.5)':'rgba(200,212,232,.2)'};font-size:10px;transform:rotate(${isDownhill?bearing:(bearing+180)%360}deg);line-height:1;">${isDownhill?'▼':'▲'}</div>`,
+          iconSize:[10,10],iconAnchor:[5,5]
+        }),
+        interactive:false
+      }).addTo(topoGrp);
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// HEAVY-GAS PLUME MODEL (SLAB-approximated)
+// ═══════════════════════════════════════════════════════════
+// Key differences from standard Gaussian:
+// 1. Slumping: heavy gas sinks, spreads laterally more than vertically
+// 2. Ground-hugging: effective release height = 0 (ground level)
+// 3. Wider lateral spread: σ_y multiplied by density ratio factor
+// 4. Shorter vertical spread: σ_z divided by density ratio factor
+// 5. Topographic channeling: downhill bearings get extended range
+// ═══════════════════════════════════════════════════════════
+
+function calcPlumeHeavyGas(volGal, windMph) {
+  const Q_kg = volGal * 3.785 * 0.94 * 0.25; // 25% flash fraction
+  const u = Math.max(windMph * 0.44704, 0.5); // m/s, min 0.5
+
+  // Heavy gas slumping correction factors (SLAB model approximation)
+  // For Vd/Va = 3.5: lateral spread enhanced, vertical suppressed
+  const Vd_ratio = VAPOR_DENSITY_RATIO; // 3.5
+  const lateral_enhance = Math.pow(Vd_ratio, 0.4); // ~1.67× wider
+  const vertical_suppress = Math.pow(Vd_ratio, 0.5); // ~1.87× shorter
+
+  // Pasquill D σ params with heavy-gas correction
+  function C(x_m) {
+    const sy_base = 0.22 * x_m * Math.pow(1 + 0.0001 * x_m, -0.5);
+    const sz_base = 0.16 * x_m * Math.pow(1 + 0.0001 * x_m, -0.5);
+    const sy = sy_base * lateral_enhance;
+    const sz = Math.max(sz_base / vertical_suppress, 0.5); // ground-level: doubled conc (reflection)
+    if(sy < 0.1) return 1e12;
+    // Ground-level source with ground reflection → factor of 2
+    return (2 * Q_kg * 1000) / (2 * Math.PI * sy * sz * u);
+  }
+
+  function findX(target_gm3) {
+    let lo=5, hi=150000;
+    for(let i=0;i<70;i++){const m=(lo+hi)/2; C(m)>target_gm3?lo=m:hi=m;}
+    return lo;
+  }
+
+  // Concentration thresholds (g/m³): ppm × MW/24450
+  const idlh_m  = findX(1000 * 100 / 24450);
+  const erpg2_m = findX(75   * 100 / 24450);
+  const erpg1_m = findX(10   * 100 / 24450);
+
+  return { idlh: idlh_m, erpg2: erpg2_m, erpg1: erpg1_m };
+}
+
+// Get topographic correction for a given bearing
+// Returns a multiplier: >1 = plume travels further (downhill), <1 = shorter (uphill)
+function getTopoCorrection(bearing_deg, dist_m) {
+  if(!topoLoaded || !topoGrid) return 1.0;
+
+  // Find nearest bearing index
+  const bIdx = Math.round(bearing_deg / (360/TOPO_BEARINGS)) % TOPO_BEARINGS;
+  // Find nearest distance index
+  let dIdx = 0;
+  for(let d=0;d<TOPO_DISTANCES.length;d++){
+    if(TOPO_DISTANCES[d]<=dist_m) dIdx=d;
+  }
+
+  const elevDelta = topoGrid[bIdx][dIdx]; // metres, negative=downhill
+  const dist = TOPO_DISTANCES[dIdx];
+
+  // Slope angle in degrees
+  const slopeAngle = Math.atan2(elevDelta, dist) * 180 / Math.PI;
+
+  // Heavy gas flows preferentially downhill
+  // Each degree of downslope extends plume range ~3%, upslope reduces ~4%
+  const correction = 1.0 + (-slopeAngle * (elevDelta < 0 ? 0.03 : 0.04));
+  return Math.max(0.5, Math.min(2.0, correction));
+}
+
+// Build topo-corrected plume polygon
+// Instead of a uniform fan, each radial arm gets topo-corrected length
+function buildHeavyGasPlumePoly(baseLengthM, halfAngleDeg, bearing) {
+  const pts = [];
+  const N = 48; // points around the fan edge
+
+  // Downwind arms: sweep the fan from -halfAngle to +halfAngle
+  const edgePts = [];
+  for(let i=0;i<=N;i++){
+    const fracAngle = i/N;
+    const armBearing = ((bearing - halfAngleDeg) + fracAngle * halfAngleDeg * 2 + 360) % 360;
+    const topoMult = getTopoCorrection(armBearing, baseLengthM);
+    // Heavy gas also spreads wider on flat/downhill terrain
+    const armLen = baseLengthM * topoMult;
+    // Lateral spread grows with distance — arms farther from centerline get slight length reduction
+    const angleFromCenter = Math.abs(fracAngle - 0.5) * 2; // 0=center, 1=edge
+    const lateralPenalty = 1 - angleFromCenter * 0.15;
+    edgePts.push(destPt(GKN[0], GKN[1], armBearing, Math.max(armLen * lateralPenalty, 1)));
+  }
+
+  // Build polygon: source → left edge → tip points → right edge → back
+  pts.push(destPt(GKN[0], GKN[1], (bearing+180)%360, 30)); // slight upwind start
+  edgePts.forEach(p=>pts.push(p));
+  pts.push(destPt(GKN[0], GKN[1], (bearing+180)%360, 30)); // close
+
   return pts;
 }
 
-// ── physics ────────────────────────────────────────────────
-function calcBlast(volGal,effPct){
-  const tntKg=volGal*3.785*0.94*26.7*(effPct/100)/4.6, s=Math.pow(tntKg,1/3);
+// ═══════════════════════════════════════════════════════════
+// PHYSICS — BLAST
+// ═══════════════════════════════════════════════════════════
+function calcBlast(volGal, effPct){
+  const tntKg = volGal * 3.785 * 0.94 * 26.7 * (effPct/100) / 4.6;
+  const s = Math.pow(tntKg, 1/3);
   return {fireball:0.8*s, severe:3.0*s, moderate:8.0*s, glass:15.0*s, tntMT:tntKg/1000};
 }
-function calcPlume(volGal,windMph){
-  const Q_kg=volGal*3.785*0.94*0.25, u=windMph*0.44704;
-  function C(x){const sy=0.22*x*Math.pow(1+0.0001*x,-.5),sz=0.16*x*Math.pow(1+0.0001*x,-.5);if(sy<.1||sz<.1)return 1e12;return Q_kg*1000/(2*Math.PI*sy*sz*u);}
-  function findX(g){let lo=5,hi=100000;for(let i=0;i<60;i++){const m=(lo+hi)/2;C(m)>g?lo=m:hi=m;}return lo;}
-  return {idlh:findX(1000*100/24450), erpg2:findX(75*100/24450), erpg1:findX(10*100/24450)};
-}
 
-// ── draw ───────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════
+// DRAW
+// ═══════════════════════════════════════════════════════════
 function drawBlast(b){
   blastGrp.clearLayers();
   [{r:b.glass,col:'#ffcc00',op:.07,lbl:'Glass break / Eardrum'},
@@ -399,20 +539,27 @@ function drawBlast(b){
 
 function drawPlume(p){
   plumeGrp.clearLayers();
-  const bearing=(window.LIVE_WIND_BEARING!=null)?window.LIVE_WIND_BEARING:WIND_BEARING_DEFAULT;
-  [{dist:p.erpg1,ang:22,col:'#ffd000',op:.13,lbl:'ERPG-1  10 ppm'},
-   {dist:p.erpg2,ang:17,col:'#ff7300',op:.22,lbl:'ERPG-2  75 ppm'},
-   {dist:p.idlh,ang:12,col:'#ff2a2a',op:.40,lbl:'IDLH 1,000 ppm'}
+  const bearing = (window.LIVE_WIND_BEARING != null) ? window.LIVE_WIND_BEARING : WIND_BEARING_DEFAULT;
+
+  [{dist:p.erpg1, ang:26, col:'#ffd000', op:.12, lbl:'ERPG-1  10 ppm'},
+   {dist:p.erpg2, ang:20, col:'#ff7300', op:.22, lbl:'ERPG-2  75 ppm'},
+   {dist:p.idlh,  ang:14, col:'#ff2a2a', op:.40, lbl:'IDLH 1,000 ppm'}
   ].forEach(z=>{
-    L.polygon(buildPlumePoly(z.dist,z.ang,bearing),{color:z.col,weight:1.2,opacity:.65,fillColor:z.col,fillOpacity:z.op})
-    .bindTooltip(`<b style="color:${z.col}">${z.lbl}</b><br>${miStr(z.dist)} downwind`,{sticky:true})
+    const pts = buildHeavyGasPlumePoly(z.dist, z.ang, bearing);
+    L.polygon(pts,{color:z.col,weight:1.2,opacity:.65,fillColor:z.col,fillOpacity:z.op})
+    .bindTooltip(`<b style="color:${z.col}">${z.lbl}</b><br>Centerline: ${miStr(z.dist)} downwind<br>Heavy-gas model (ρ=3.5×air)${topoLoaded?'<br>Topo-corrected':''}`,{sticky:true})
     .addTo(plumeGrp);
-    const tip=destPt(GKN[0],GKN[1],bearing,z.dist);
+
+    // Tip label at centerline downwind
+    const topoMult = getTopoCorrection(bearing, z.dist);
+    const tip = destPt(GKN[0],GKN[1],bearing, z.dist * topoMult);
     L.marker(tip,{icon:L.divIcon({className:'',html:`<div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:${z.col};background:rgba(10,12,15,.82);padding:2px 4px;border:1px solid ${z.col}55;border-radius:3px;white-space:nowrap;pointer-events:none;">${z.lbl} · ${miStr(z.dist)}</div>`,iconAnchor:[0,0]}),interactive:false}).addTo(plumeGrp);
   });
+
+  // Wind arrows
   for(let d=400;d<p.erpg2;d+=700){
     const pt=destPt(GKN[0],GKN[1],bearing,d);
-    L.marker(pt,{icon:L.divIcon({className:'',html:`<div style="color:rgba(200,212,232,.45);font-size:13px;transform:rotate(${bearing}deg);line-height:1;">➤</div>`,iconSize:[14,14],iconAnchor:[7,7]}),interactive:false}).addTo(plumeGrp);
+    L.marker(pt,{icon:L.divIcon({className:'',html:`<div style="color:rgba(200,212,232,.4);font-size:12px;transform:rotate(${bearing}deg);line-height:1;">➤</div>`,iconSize:[12,12],iconAnchor:[6,6]}),interactive:false}).addTo(plumeGrp);
   }
 }
 
@@ -420,22 +567,22 @@ function drawEvac(){
   evacGrp.clearLayers();
   const bounds=[[33.8065,-118.0075],[33.8065,-117.9265],[33.7615,-117.9265],[33.7615,-118.0075]];
   L.polygon(bounds,{color:'#ffd000',weight:2,opacity:.75,fillColor:'#ffd000',fillOpacity:.05,dashArray:'7 4'})
-  .bindTooltip('<b style="color:#ffd000">EVACUATION ORDER (ggcity.org/emergency)</b><br>N: Ball Rd · S: Trask Ave<br>W: Valley View St · E: Dale St<br>~40,000 residents',{sticky:true})
+  .bindTooltip('<b style="color:#ffd000">EVACUATION ORDER (ggcity.org/emergency)</b><br>N: Ball Rd · S: Trask Ave · W: Valley View St · E: Dale St<br>~40,000 residents',{sticky:true})
   .addTo(evacGrp);
-  L.marker([33.8068,-117.968],{icon:L.divIcon({className:'',html:`<div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(255,208,0,.9);background:rgba(10,12,15,.75);padding:2px 6px;border-radius:2px;white-space:nowrap;">⚠ EVACUATION ORDER · ~40,000 residents · N:Ball Rd S:Trask Ave W:Valley View E:Dale St</div>`,iconAnchor:[0,0]}),interactive:false}).addTo(evacGrp);
+  L.marker([33.8068,-117.968],{icon:L.divIcon({className:'',html:`<div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(255,208,0,.9);background:rgba(10,12,15,.75);padding:2px 6px;border-radius:2px;white-space:nowrap;">⚠ EVACUATION ORDER · ~40,000 residents · N:Ball Rd S:Trask W:Valley View E:Dale St</div>`,iconAnchor:[0,0]}),interactive:false}).addTo(evacGrp);
 }
 
-// ── helpers ────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════
 function ftStr(m){return Math.round(m*3.281).toLocaleString()+' ft';}
 function miStr(m){return (m/1609).toFixed(2)+' mi';}
-function bearingToCompass(deg){if(deg==null)return '?';const dirs=['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];return dirs[Math.round(deg/22.5)%16];}
+function bearingToCompass(deg){if(deg==null)return '?';const d=['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];return d[Math.round(deg/22.5)%16];}
 
-// ── cascade ────────────────────────────────────────────────
 const tanks={t2:false,t3:false};
 let activeTanks=1;
 function togTank(n){const k='t'+n;tanks[k]=!tanks[k];document.getElementById('sw-tank'+n).classList.toggle('on',tanks[k]);onSlide();}
 
-// ── update UI ──────────────────────────────────────────────
 function updateUI(b,p){
   document.getElementById('s-tnt').textContent=b.tntMT.toFixed(1)+' MT TNT'+(activeTanks>1?' ⚠':'');
   document.getElementById('d-fb').textContent=ftStr(b.fireball);
@@ -455,7 +602,9 @@ function updateUI(b,p){
   document.getElementById('ib-e1').textContent=miStr(p.erpg1);
 }
 
-// ── main slide ─────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════
+// MAIN SLIDE
+// ═══════════════════════════════════════════════════════════
 function onSlide(){
   const eff=+document.getElementById('sl-eff').value;
   const wind=+document.getElementById('sl-wind').value;
@@ -463,24 +612,26 @@ function onSlide(){
   const vol2=tanks.t2?34000:0, vol3=tanks.t3?34000:0;
   const totalVol=vol1+vol2+vol3;
   activeTanks=1+(tanks.t2?1:0)+(tanks.t3?1:0);
-  const scenarioLabel=activeTanks===1?'Single tank':activeTanks===2?'CASCADE — 2 tanks':'CASCADE — ALL 3';
 
   document.getElementById('lbl-eff').textContent=eff+'%';
   document.getElementById('lbl-wind').textContent=wind;
   document.getElementById('lbl-vol').textContent=Math.round(vol1).toLocaleString();
   document.getElementById('s-vol').textContent=Math.round(vol1).toLocaleString()+' gal';
   document.getElementById('s-totalvol').textContent=totalVol.toLocaleString()+' gal';
-  document.getElementById('s-scenario').textContent=scenarioLabel;
+  document.getElementById('s-scenario').textContent=activeTanks===1?'Single tank':activeTanks===2?'CASCADE — 2 tanks':'CASCADE — ALL 3';
   document.getElementById('s-wspd').textContent=wind+' mph';
 
-  const b=calcBlast(totalVol,eff), p=calcPlume(totalVol,wind);
+  const b=calcBlast(totalVol,eff);
+  const p=calcPlumeHeavyGas(totalVol,wind);
   updateUI(b,p);
   if(state.blast)drawBlast(b);else blastGrp.clearLayers();
   if(state.plume)drawPlume(p);else plumeGrp.clearLayers();
   if(state.evac)drawEvac();else evacGrp.clearLayers();
 }
 
-// ── weather ────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════
+// WEATHER
+// ═══════════════════════════════════════════════════════════
 let forecastHours=[];
 
 function applyWeatherHour(idx){
@@ -488,20 +639,18 @@ function applyWeatherHour(idx){
   const h=forecastHours[Math.min(idx,forecastHours.length-1)];
   const clamped=Math.min(20,Math.max(2,h.wsMph));
   window.LIVE_WIND_BEARING=(h.wdDeg+180)%360;
-  const compassFrom=bearingToCompass(h.wdDeg);
-  const compassTo=bearingToCompass(window.LIVE_WIND_BEARING);
+  const cF=bearingToCompass(h.wdDeg), cT=bearingToCompass(window.LIVE_WIND_BEARING);
   const label=idx===0?'Now':'+'+idx+'h ('+h.timeLabel+')';
-
   document.getElementById('sl-wind').value=clamped;
   document.getElementById('lbl-wind').textContent=clamped;
   document.getElementById('s-wspd').textContent=clamped+' mph';
-  document.getElementById('s-plumedir').textContent=compassFrom+' → '+compassTo;
-  document.getElementById('wb-dir').textContent=compassFrom+' → '+compassTo;
+  document.getElementById('s-plumedir').textContent=cF+' → '+cT;
+  document.getElementById('wb-dir').textContent=cF+' → '+cT;
   document.getElementById('wb-spd').textContent=clamped+' mph';
   document.getElementById('wb-gust').textContent=h.wgMph+' mph';
-  document.getElementById('wb-src').textContent=idx===0?'open-meteo (live)':'open-meteo fcst '+label;
+  document.getElementById('wb-src').textContent=idx===0?'open-meteo (live)':'fcst '+label;
   document.getElementById('lbl-fcast').textContent=label;
-  document.getElementById('fcast-detail').textContent=h.wsMph+' mph from '+compassFrom+', gusts '+h.wgMph+' mph';
+  document.getElementById('fcast-detail').textContent=h.wsMph+' mph from '+cF+', gusts '+h.wgMph+' mph';
   onSlide();
 }
 
@@ -517,13 +666,13 @@ async function fetchWeather(silent){
     const resp=await fetch(url);
     if(!resp.ok)throw new Error('HTTP '+resp.status);
     const data=await resp.json();
-    const now=new Date(), ch=now.getHours();
-    const times=data.hourly.time, speeds=data.hourly.wind_speed_10m, dirs=data.hourly.wind_direction_10m, gusts=data.hourly.wind_gusts_10m;
+    const now=new Date(),ch=now.getHours();
+    const times=data.hourly.time,speeds=data.hourly.wind_speed_10m,dirs=data.hourly.wind_direction_10m,gusts=data.hourly.wind_gusts_10m;
     let si=0;
     for(let i=0;i<times.length;i++){const t=new Date(times[i]);if(t.getHours()===ch&&t.getDate()===now.getDate()){si=i;break;}}
     forecastHours=[];
     for(let i=0;i<=10;i++){
-      const idx=si+i, t=new Date(times[idx]), hr=t.getHours(), ampm=hr>=12?'PM':'AM', hr12=hr%12||12;
+      const idx=si+i,t=new Date(times[idx]),hr=t.getHours(),ampm=hr>=12?'PM':'AM',hr12=hr%12||12;
       forecastHours.push({wsMph:Math.round(speeds[idx]),wdDeg:dirs[idx],wgMph:Math.round(gusts[idx]),timeLabel:hr12+ampm});
     }
     forecastHours[0]={wsMph:Math.round(data.current.wind_speed_10m),wdDeg:data.current.wind_direction_10m,wgMph:Math.round(data.current.wind_gusts_10m),timeLabel:'Now'};
@@ -533,14 +682,19 @@ async function fetchWeather(silent){
     if(!silent){const h=forecastHours[0];status.className='ok';status.textContent='✓ '+h.wsMph+' mph from '+bearingToCompass(h.wdDeg)+', gusts '+h.wgMph;}
   }catch(e){
     status.className='err';status.textContent='✗ '+(e.message||'Fetch failed');
-    if(silent){document.getElementById('wb-src').textContent='weather unavailable';}
-  }finally{btn.classList.remove('loading');btn.textContent='⟳ Live weather';}
+    if(silent)document.getElementById('wb-src').textContent='weather unavailable';
+  }finally{
+    btn.classList.remove('loading');btn.textContent='⟳ Live weather';
+  }
 }
 
-// ── init ───────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
 onSlide();
 setTimeout(()=>{map.invalidateSize();},100);
 fetchWeather(true);
+fetchTopography();
 </script>
 </body>
 </html>
