@@ -662,31 +662,22 @@ let activeTanks=1;
 function togTank(n){const k='t'+n;tanks[k]=!tanks[k];document.getElementById('sw-tank'+n).classList.toggle('on',tanks[k]);onSlide();}
 
 function updateUI(b,p){
-  document.getElementById('s-tnt').textContent=b.tntMT.toFixed(1)+' MT TNT'+(activeTanks>1?' ⚠':'');
-  document.getElementById('d-fb').textContent=ftStr(b.fireball);
-  document.getElementById('d-sv').textContent=ftStr(b.severe);
-  document.getElementById('d-md').textContent=ftStr(b.moderate);
-  document.getElementById('d-gl').textContent=miStr(b.glass);
-  document.getElementById('d-id').textContent=miStr(p.idlh);
-  document.getElementById('d-e2').textContent=miStr(p.erpg2);
-  document.getElementById('d-e1').textContent=miStr(p.erpg1);
-  // bottom bar stat cells
-  document.getElementById('ib-tnt').textContent=b.tntMT.toFixed(1)+' MT';
-  document.getElementById('ib-fb').textContent=ftStr(b.fireball);
-  document.getElementById('ib-sv').textContent=ftStr(b.severe);
-  document.getElementById('ib-md').textContent=ftStr(b.moderate);
-  document.getElementById('ib-gl').textContent=miStr(b.glass);
-  document.getElementById('ib-id').textContent=miStr(p.idlh);
-  document.getElementById('ib-e2').textContent=miStr(p.erpg2);
-  document.getElementById('ib-e1').textContent=miStr(p.erpg1);
-  // legend strip inline values
-  document.getElementById('ls-fb').textContent=ftStr(b.fireball);
-  document.getElementById('ls-sv').textContent=ftStr(b.severe);
-  document.getElementById('ls-md').textContent=ftStr(b.moderate);
-  document.getElementById('ls-gl').textContent=miStr(b.glass);
-  document.getElementById('ls-id').textContent=miStr(p.idlh);
-  document.getElementById('ls-e2').textContent=miStr(p.erpg2);
-  document.getElementById('ls-e1').textContent=miStr(p.erpg1);
+  const safe = (id,val) => { const el=document.getElementById(id); if(el) el.textContent=val; };
+  safe('s-tnt', b.tntMT.toFixed(1)+' MT TNT'+(activeTanks>1?' ⚠':''));
+  safe('d-fb',  ftStr(b.fireball));
+  safe('d-sv',  ftStr(b.severe));
+  safe('d-md',  ftStr(b.moderate));
+  safe('d-gl',  miStr(b.glass));
+  safe('d-id',  miStr(p.idlh));
+  safe('d-e2',  miStr(p.erpg2));
+  safe('d-e1',  miStr(p.erpg1));
+  safe('ls-fb', ftStr(b.fireball));
+  safe('ls-sv', ftStr(b.severe));
+  safe('ls-md', ftStr(b.moderate));
+  safe('ls-gl', miStr(b.glass));
+  safe('ls-id', miStr(p.idlh));
+  safe('ls-e2', miStr(p.erpg2));
+  safe('ls-e1', miStr(p.erpg1));
 }
 
 // ═══════════════════════════════════════════════════════════
