@@ -131,7 +131,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;heigh
 <div id="header">
   <div class="alert-dot"></div>
   <h1>GKN AEROSPACE — HAZARD ZONE SIMULATOR</h1>
-  <div class="sub">12122 WESTERN AVE, GARDEN GROVE CA &nbsp;|&nbsp; MMA TANK EMERGENCY &nbsp;|&nbsp; MAY 23 2026</div>
+  <div class="sub">12122 WESTERN AVE, GARDEN GROVE CA &nbsp;|&nbsp; BLEVE THREAT ELIMINATED 5/25 &nbsp;|&nbsp; EVAC ZONE REDUCED TO 16,000</div>
   <button id="menu-btn" onclick="toggleDrawer()">
     <div class="hamburger"><span></span><span></span><span></span></div>
     CONTROLS
@@ -260,9 +260,10 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;heigh
     <div class="ls-item" style="margin-left:4px;border-left:1px solid var(--border);padding-left:6px;"><div class="ls-dot" style="border-radius:50%;background:#ff2a2a"></div><div><div class="ls-lbl">IDLH</div><div class="ls-val c" id="ls-id">—</div></div></div>
     <div class="ls-item"><div class="ls-dot" style="border-radius:50%;background:#ff7300"></div><div><div class="ls-lbl">ERPG-2</div><div class="ls-val w" id="ls-e2">—</div></div></div>
     <div class="ls-item"><div class="ls-dot" style="border-radius:50%;background:#ffd000"></div><div><div class="ls-lbl">ERPG-1</div><div class="ls-val" id="ls-e1">—</div></div></div>
-    <div class="ls-item" style="margin-left:4px;border-left:1px solid var(--border);padding-left:6px;"><div class="ls-dot" style="background:#ffd000;opacity:.4"></div><div><div class="ls-lbl">Evac zone</div><div class="ls-val" style="color:rgba(255,208,0,.6)">~50k residents</div></div></div>
-    <div class="ls-item" style="margin-left:4px;border-left:1px solid var(--border);padding-left:6px;"><div class="ls-dot" style="border-radius:50%;background:#00e676"></div><div><div class="ls-lbl">Shelters</div><div class="ls-val" style="color:#00e676">5 active</div></div></div>
-    <div class="ls-item" style="margin-left:4px;border-left:1px solid var(--border);padding-left:6px;color:#00e676;flex-direction:column;align-items:flex-start;"><div class="ls-lbl" style="color:var(--dim)">EMERGENCY</div><div class="ls-val" style="color:#00e676">☎ (714) 741-5444</div></div>
+    <div class="ls-item" style="margin-left:4px;border-left:1px solid var(--border);padding-left:6px;"><div class="ls-dot" style="background:#ff2a2a;opacity:.6"></div><div><div class="ls-lbl">Active evac</div><div class="ls-val" style="color:rgba(255,42,42,.8)">16k residents</div></div></div>
+    <div class="ls-item"><div class="ls-dot" style="background:#ffd000;opacity:.3"></div><div><div class="ls-lbl">Prev zone</div><div class="ls-val" style="color:rgba(255,208,0,.5)">lifted 5/25</div></div></div>
+    <div class="ls-item" style="margin-left:4px;border-left:1px solid var(--border);padding-left:6px;"><div class="ls-dot" style="border-radius:50%;background:#00e676"></div><div><div class="ls-lbl">Shelters</div><div class="ls-val" style="color:#00e676">6 active</div></div></div>
+    <div class="ls-item" style="margin-left:4px;border-left:1px solid var(--border);padding-left:6px;flex-direction:column;align-items:flex-start;"><div class="ls-lbl" style="color:var(--dim)">EMERGENCY</div><div class="ls-val" style="color:#00e676">☎ 911 · (714) 741-5444</div></div>
   </div>
 </div>
 
@@ -564,11 +565,34 @@ function drawPlume(p){
 
 function drawEvac(){
   evacGrp.clearLayers();
-  const bounds=[[33.8065,-118.0075],[33.8065,-117.9851],[33.7615,-117.9851],[33.7615,-118.0075]];
-  L.polygon(bounds,{color:'#ffd000',weight:2,opacity:.75,fillColor:'#ffd000',fillOpacity:.05,dashArray:'7 4'})
-  .bindTooltip('<b style="color:#ffd000">EVACUATION ORDER (ggcity.org/emergency)</b><br>N: Ball Rd · S: Trask Ave · W: Valley View St · E: Dale St<br>~50,000 residents',{sticky:true})
+
+  // PREVIOUS zone (outline only) — Ball Rd / Trask Ave / Valley View / Dale
+  // 50,000 residents — now reduced
+  const oldBounds=[[33.8065,-118.0075],[33.8065,-117.9851],[33.7615,-117.9851],[33.7615,-118.0075]];
+  L.polygon(oldBounds,{
+    color:'#ffd000',weight:1.5,opacity:.4,
+    fillColor:'#ffd000',fillOpacity:.02,dashArray:'4 6'
+  })
+  .bindTooltip('<b style="color:#ffd000">PREVIOUS EVAC ZONE (lifted 5/25 6pm)</b><br>N: Ball Rd · S: Trask Ave · W: Valley View · E: Dale St<br>50,000 residents — now reduced',{sticky:true})
   .addTo(evacGrp);
-  L.marker([33.8068,-117.996],{icon:L.divIcon({className:'',html:`<div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(255,208,0,.9);background:rgba(10,12,15,.75);padding:2px 6px;border-radius:2px;white-space:nowrap;">⚠ EVACUATION ORDER · ~50,000 residents · N:Ball Rd S:Trask W:Valley View E:Dale St</div>`,iconAnchor:[0,0]}),interactive:false}).addTo(evacGrp);
+
+  // NEW reduced zone (solid) — Orangewood / GG Blvd / Knott / Dale
+  // 16,000 residents — active as of Mon May 25 6pm
+  // Orangewood Ave ~33.7855, GG Blvd ~33.7780, Knott St ~-118.0040, Dale ~-117.9851
+  const newBounds=[[33.7855,-118.0040],[33.7855,-117.9851],[33.7780,-117.9851],[33.7780,-118.0040]];
+  L.polygon(newBounds,{
+    color:'#ff2a2a',weight:2,opacity:.85,
+    fillColor:'#ff2a2a',fillOpacity:.08,dashArray:'6 3'
+  })
+  .bindTooltip('<b style="color:#ff2a2a">ACTIVE EVAC ZONE (updated 5/25 6pm)</b><br>N: Orangewood Ave · S: Garden Grove Blvd<br>W: Knott St · E: Dale St<br>~16,000 residents — BLEVE threat eliminated',{sticky:true})
+  .addTo(evacGrp);
+
+  // Labels
+  L.marker([33.7858,-117.995],{
+    icon:L.divIcon({className:'',html:`<div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(255,42,42,.9);background:rgba(10,12,15,.82);padding:2px 6px;border-radius:2px;white-space:nowrap;">⚠ ACTIVE EVAC · 16,000 residents · Orangewood/GG Blvd · Knott/Dale</div>`,iconAnchor:[0,0]}),interactive:false}).addTo(evacGrp);
+
+  L.marker([33.808,-117.995],{
+    icon:L.divIcon({className:'',html:`<div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(255,208,0,.6);background:rgba(10,12,15,.75);padding:2px 6px;border-radius:2px;white-space:nowrap;">Previous zone (50k) — lifted 5/25 6pm</div>`,iconAnchor:[0,0]}),interactive:false}).addTo(evacGrp);
 }
 
 function drawShelters(){
@@ -586,11 +610,11 @@ function drawShelters(){
 
   const shelters=[
     {
-      name:'Freedom Hall (Mile Square Park)',
-      addr:'16801 Euclid St, Fountain Valley, CA 92708',
-      lat:33.7185, lng:-117.9381,
-      status:'🔴 FULL',
-      phone:'(714) 973-6600',
+      name:'Los Amigos High School',
+      addr:'16566 Newhope St, Fountain Valley, CA 92708',
+      lat:33.7063, lng:-117.9521,
+      status:'🟢 Open',
+      phone:'(714) 628-7085',
       pets:true
     },
     {
@@ -602,27 +626,35 @@ function drawShelters(){
       pets:true
     },
     {
+      name:'Golden West College Gymnasium',
+      addr:'15744 Goldenwest St, Huntington Beach, CA 92647',
+      lat:33.7361, lng:-118.0003,
+      status:'🟡 Check availability',
+      phone:'(714) 628-7060',
+      pets:true
+    },
+    {
       name:'Kennedy High School',
       addr:'8281 Walker St, La Palma, CA 90623',
       lat:33.8425, lng:-118.0387,
-      status:'🟡 Some room',
+      status:'🔴 FULL',
       phone:'(714) 220-4101',
+      pets:true
+    },
+    {
+      name:'Freedom Hall (Mile Square Park)',
+      addr:'16801 Euclid St, Fountain Valley, CA 92708',
+      lat:33.7185, lng:-117.9381,
+      status:'🔴 FULL',
+      phone:'(714) 973-6600',
       pets:true
     },
     {
       name:'Ocean View High School',
       addr:'17071 Gothard St, Huntington Beach, CA 92647',
       lat:33.7145, lng:-118.0006,
-      status:'🟢 Space available',
+      status:'🔴 FULL',
       phone:'(714) 848-0656',
-      pets:true
-    },
-    {
-      name:'Golden West College Gymnasium',
-      addr:'15744 Goldenwest St, Huntington Beach, CA 92647',
-      lat:33.7361, lng:-118.0003,
-      status:'🟢 Check availability',
-      phone:'(714) 628-7060',
       pets:true
     },
   ];
